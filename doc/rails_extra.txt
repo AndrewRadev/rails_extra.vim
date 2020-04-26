@@ -1,0 +1,57 @@
+*rails_extra.txt*	TODO
+
+==============================================================================
+CONTENTS                                        *rails_extra*   *rails_extra-contents*
+
+    Installation................................: |rails_extra-installation|
+    Usage.......................................: |rails_extra-usage|
+    Settings....................................: |rails_extra-settings|
+    Internals...................................: |rails_extra-internals|
+    Issues......................................: |rails_extra-issues|
+
+
+==============================================================================
+INSTALLATION                                            *rails_extra-installation*
+
+There are several ways to install the plugin. The recommended one is by using
+Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
+that case, you can clone the plugin's git repository like so:
+>
+    git clone https://github.com/AndrewRadev/rails_extra.vim ~/.vim/bundle/rails_extra
+<
+If your vim configuration is under git version control, you could also set up
+the repository as a submodule, which would allow you to update more easily.
+The command is (provided you're in ~/.vim):
+>
+    git submodule add https://github.com/AndrewRadev/rails_extra.vim bundle/rails_extra
+<
+
+Another way is to simply copy all the essential directories inside the ~/.vim
+directory: TODO list of directories
+
+
+==============================================================================
+USAGE                                                          *rails_extra-usage*
+
+TODO
+
+
+==============================================================================
+SETTINGS                                                    *rails_extra-settings*
+
+TODO
+
+
+==============================================================================
+INTERNALS                                                  *rails_extra-internals*
+
+TODO
+
+==============================================================================
+ISSUES                                                        *rails_extra-issues*
+
+Any issues and suggestions are very welcome on the github bugtracker:
+https://github.com/AndrewRadev/rails_extra.vim/issues
+
+
+vim:tw=78:sw=4:ft=help:norl:
