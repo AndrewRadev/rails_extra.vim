@@ -1,5 +1,6 @@
 let s:http_method_pattern = '\<\%(get\|post\|put\|delete\|patch\)\>'
 
+" TODO (2020-04-26) Check for files other than en.yml
 function! rails_extra#gf#Translation()
   let saved_iskeyword = &iskeyword
 
@@ -85,6 +86,7 @@ function! rails_extra#gf#Route()
   return filename
 endfunction
 
+" TODO (2020-04-26) Implement using s:FindFactory in autoload/rails_extra/edit.vim
 function! rails_extra#gf#Factory()
   if rails_extra#search#UnderCursor('\<\%(build\|create\|attributes_for\)[ (]:\zs\k\+') > 0
     let factory = expand('<cword>')

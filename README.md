@@ -1,6 +1,26 @@
 ## Usage
 
-TODO
+**TODO**
+
+Depends on [vim-rails](https://github.com/tpope/vim-rails)
+
+Commands (only in rails projects):
+
+``` vim
+:Eschema <table-name>
+:Efactory <factory-name>
+:Eroutes
+```
+
+The `gf` mapping now works for:
+
+- Translations (`t("foo.bar.baz")`)
+- Assets (require, import, `javascript_script_tag`, etc)
+- Routes in the router (not perfect, but works most of the time)
+- Factories (cursor on `create`, `build` etc, only for separate factory files, needs more work)
+- Custom rspec matchers
+
+**TODO More explanations, fixes**
 
 ## Contributing
 
