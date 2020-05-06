@@ -11,6 +11,11 @@ Vimrunner::RSpec.configure do |config|
     vim = Vimrunner.start_gvim
     vim.add_plugin(plugin_path.join('spec/support/vim-rails'), 'plugin/rails.vim')
     vim.add_plugin(plugin_path, 'plugin/rails_extra.vim')
+
+    # bootstrap filetypes
+    vim.command 'autocmd BufNewFile,BufRead *.coffee set filetype=coffee'
+    vim.command 'autocmd BufNewFile,BufRead *.scss set filetype=scss'
+
     vim
   end
 end

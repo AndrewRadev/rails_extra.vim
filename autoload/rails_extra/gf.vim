@@ -15,7 +15,7 @@ function! rails_extra#gf#Translation()
 
   let callback_args = [translations_file]
   call extend(callback_args, split(translation_key, '\.'))
-  call call('rails_extra#SetFileOpenCallback', callback_args)
+  call call('rails_extra#SetFileOpenCallbackSearch', callback_args)
 
   let &iskeyword = saved_iskeyword
   return translations_file
@@ -24,28 +24,28 @@ endfunction
 function! rails_extra#gf#Asset()
   let line = getline('.')
 
-  let coffee_require_pattern = '#=\s*require \(\f\+\)\s*$'
+  let js_require_pattern     = '//\s*=\s*require \(\f\+\)\s*$'
+  let coffee_require_pattern = '#\s*=\s*require \(\f\+\)\s*$'
+  let css_require_pattern    = '\*\s*=\s*require \(\f\+\)\s*$'
   let scss_import_pattern    = '@import "\(.\{-}\)";'
-  let stylesheet_pattern     = 'stylesheet ''\(.\{-}\)'''
-  let javascript_pattern     = 'javascript ''\(.\{-}\)'''
 
   if expand('%:e') =~ 'coffee' && line =~ coffee_require_pattern
     let path = rails_extra#util#ExtractRx(line, coffee_require_pattern, '\1')
-    return s:FindRailsFile('app/assets/javascripts/'.path.'.*')
-  elseif expand('%:e') =~ 'scss' && line =~ scss_import_pattern
+    return s:FindRailsFile('app/assets/javascripts/'.path.'.{js,coffee}')
+  elseif expand('%:e') =~ 'scss\|less' && line =~ scss_import_pattern
     let path = rails_extra#util#ExtractRx(line, scss_import_pattern, '\1')
-    let file = s:FindRailsFile('app/assets/stylesheets/'.path.'.*')
+    let file = s:FindRailsFile('app/assets/stylesheets/'.path.'.{css,scss,less}')
     if file == ''
       let path = substitute(path, '.*/\zs\([^/]\{-}\)$', '_\1', '')
-      let file = s:FindRailsFile('app/assets/stylesheets/'.path.'.*')
+      let file = s:FindRailsFile('app/assets/stylesheets/'.path.'.{css,scss,less}')
     endif
     return file
-  elseif line =~ stylesheet_pattern
-    let path = rails_extra#util#ExtractRx(line, stylesheet_pattern, '\1')
-    return s:FindRailsFile('app/assets/stylesheets/'.path.'.*')
-  elseif line =~ javascript_pattern
-    let path = rails_extra#util#ExtractRx(line, javascript_pattern, '\1')
-    return s:FindRailsFile('app/assets/javascripts/'.path.'.*')
+  elseif &ft == 'javascript' && line =~ js_require_pattern
+    let path = rails_extra#util#ExtractRx(line, js_require_pattern, '\1')
+    return s:FindRailsFile('app/assets/javascripts/'.path.'.{js,coffee}')
+  elseif (&ft == 'css' || &ft == 'scss') && line =~ css_require_pattern
+    let path = rails_extra#util#ExtractRx(line, css_require_pattern, '\1')
+    return s:FindRailsFile('app/assets/stylesheets/'.path.'.{css,scss,less}')
   endif
 
   return ''
@@ -82,15 +82,21 @@ function! rails_extra#gf#Route()
     return ''
   endif
 
-  call rails_extra#SetFileOpenCallback(filename, 'def '.action)
+  call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action)
   return filename
 endfunction
 
-" TODO (2020-04-26) Implement using s:FindFactory in autoload/rails_extra/edit.vim
 function! rails_extra#gf#Factory()
   if rails_extra#search#UnderCursor('\<\%(build\|create\|attributes_for\)[ (]:\zs\k\+') > 0
     let factory = expand('<cword>')
-    return 'spec/factories/'.rails#pluralize(factory).'.rb'
+    let [filename, lineno] = rails_extra#edit#FindFactory(factory)
+
+    if filename == ''
+      return ''
+    else
+      call rails_extra#SetFileOpenCallbackLine(filename, lineno)
+      return filename
+    endif
   endif
   return ''
 endfunction
@@ -106,7 +112,9 @@ function! rails_extra#gf#RspecMatcher()
 endfunction
 
 function! s:FindRailsFile(pattern)
-  let matches = glob(getcwd().'/'.a:pattern, 0, 1)
+  let root = get(b:, 'rails_root', getcwd())
+
+  let matches = glob(root.'/'.a:pattern, 0, 1)
   if !empty(matches)
     return matches[0]
   else

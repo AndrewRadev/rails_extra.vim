@@ -30,7 +30,7 @@ function! rails_extra#edit#Factory(factory_name)
     let factory_name = rails_extra#util#Underscore(s:CurrentModelName())
   endif
 
-  let [filename, lineno] = s:FindFactory(factory_name)
+  let [filename, lineno] = rails_extra#edit#FindFactory(factory_name)
 
   if filename != ''
     exe 'edit '.filename
@@ -80,7 +80,7 @@ endfunction
 function! rails_extra#edit#CompleteFactories(A, L, P)
   let factory_names = []
 
-  for filename in s:FindFactoryFiles()
+  for filename in rails_extra#edit#FindFactoryFiles()
     for line in readfile(filename)
       let pattern = '^\s*factory :\zs\k\+\ze\s*\%(,\|do\)'
 
@@ -96,10 +96,10 @@ function! rails_extra#edit#CompleteFactories(A, L, P)
   return join(factory_names, "\n")
 endfunction
 
-function! s:FindFactory(name)
+function! rails_extra#edit#FindFactory(name)
   let pattern = '^\s*factory :'.a:name.'\>'
 
-  for filename in s:FindFactoryFiles()
+  for filename in rails_extra#edit#FindFactoryFiles()
     let lineno = 1
     for line in readfile(filename)
       if line =~ pattern
@@ -113,7 +113,7 @@ function! s:FindFactory(name)
   return ['', -1]
 endfunction
 
-function! s:FindFactoryFiles()
+function! rails_extra#edit#FindFactoryFiles()
   let factory_files = []
 
   if exists('b:rails_root')

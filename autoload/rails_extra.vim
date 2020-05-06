@@ -20,7 +20,18 @@ function! rails_extra#Includeexpr()
   return rails#ruby_cfile('delegate')
 endfunction
 
-function! rails_extra#SetFileOpenCallback(filename, ...)
+function! rails_extra#SetFileOpenCallbackLine(filename, lineno)
+  let filename = fnamemodify(a:filename, ':p')
+
+  augroup rails_extra_file_open_callback
+    autocmd!
+
+    exe 'autocmd BufEnter '.filename.' :'.a:lineno
+    exe 'autocmd BufEnter '.filename.' call rails_extra#ClearFileOpenCallback()'
+  augroup END
+endfunction
+
+function! rails_extra#SetFileOpenCallbackSearch(filename, ...)
   let searches = a:000
   let filename = fnamemodify(a:filename, ':p')
 

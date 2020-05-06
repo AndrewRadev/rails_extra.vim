@@ -3,15 +3,19 @@ require 'fileutils'
 module Support
   module Vim
     def touch_file(filename)
+      write_file(filename, '')
+    end
+
+    def write_file(filename, string)
       if !File.exists?(filename)
         FileUtils.mkdir_p(File.dirname(filename))
-        write_file(filename, '')
       end
+
+      string = normalize_string_indent(string)
+      File.open(filename, 'w') { |f| f.write(string + "\n") }
     end
 
     def edit_file(filename, contents = nil)
-      FileUtils.mkdir_p(File.dirname(filename))
-
       if contents
         write_file(filename, contents)
       else
@@ -22,7 +26,7 @@ module Support
     end
 
     def current_file
-      vim.command('echo expand("%")')
+      vim.command('echo expand("%:.")')
     end
 
     def current_line
