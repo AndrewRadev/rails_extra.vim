@@ -14,7 +14,7 @@ describe "gf mapping" do
         <%= t('users.page.heading') %>
       EOF
       vim.search 'users'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'config/locales/en.yml'
       expect(current_line).to include 'heading: "Users page"'
@@ -32,7 +32,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'app/assets/stylesheets/other.scss'
     end
@@ -44,7 +44,9 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.normal 'gf'
+      puts vim.command('map gf')
+      puts vim.command('cmap <Plug><cfile>')
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'app/assets/javascripts/other.js'
     end
@@ -56,7 +58,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'app/assets/javascripts/other.js'
     end
@@ -70,7 +72,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'app/assets/stylesheets/other.css'
     end
@@ -95,10 +97,10 @@ describe "gf mapping" do
       EOF
 
       vim.search 'users#profile'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'app/controllers/users_controller.rb'
-      expect(current_line).to eq 'def profile'
+      expect(current_line.strip).to eq 'def profile'
     end
 
     # TODO (2020-05-06) Resource, resources
@@ -122,10 +124,10 @@ describe "gf mapping" do
       EOF
 
       vim.search ':\zsuser'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'test/factories.rb'
-      expect(current_line).to eq 'factory :user'
+      expect(current_line.strip).to eq 'factory :user do'
     end
   end
 
@@ -137,7 +139,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'wibble'
-      vim.normal 'gf'
+      vim.command 'normal gf'
 
       expect(current_file).to eq 'spec/support/matchers/wibble_and_wobble_matcher.rb'
     end

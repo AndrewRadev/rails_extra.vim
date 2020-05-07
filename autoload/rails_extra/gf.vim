@@ -55,15 +55,16 @@ function! rails_extra#gf#Route()
   if expand('%:p') !~ 'config/routes\.rb$'
     return
   endif
+  let root = s:GetRoot()
 
   let description = s:FindRouteDescription()
   if description == ''
-    return
+    return ''
   endif
 
   if description !~ '^\k\+#\k\+$'
     echomsg "Description doesn't look like controller#action: ".description
-    return
+    return ''
   endif
 
   let nesting = s:FindRouteNesting()
@@ -76,8 +77,7 @@ function! rails_extra#gf#Route()
   endif
 
   let [controller, action] = split(description, '#')
-  let filename = 'app/controllers/'.file_prefix.controller.'_controller.rb'
-
+  let filename = root.'app/controllers/'.file_prefix.controller.'_controller.rb'
   if !filereadable(filename)
     return ''
   endif
@@ -103,12 +103,12 @@ endfunction
 
 function! rails_extra#gf#RspecMatcher()
   let matcher = expand('<cword>')
-  let matcher_filename = 'spec/support/matchers/'.matcher.'_matcher.rb'
-
-  if filereadable(matcher_filename)
-    return matcher_filename
+  let matcher_filename = s:GetRoot().'spec/support/matchers/'.matcher.'_matcher.rb'
+  if !filereadable(matcher_filename)
+    return ''
   endif
-  return ''
+
+  return matcher_filename
 endfunction
 
 function! s:FindRailsFile(pattern)
@@ -175,4 +175,8 @@ function! s:FindRouteNesting()
   endwhile
 
   return route_path
+endfunction
+
+function! s:GetRoot()
+  return get(b:, 'rails_root', getcwd()).'/'
 endfunction
