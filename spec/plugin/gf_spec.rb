@@ -44,8 +44,6 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      puts vim.command('map gf')
-      puts vim.command('cmap <Plug><cfile>')
       vim.command 'normal gf'
 
       expect(current_file).to eq 'app/assets/javascripts/other.js'
@@ -64,11 +62,11 @@ describe "gf mapping" do
     end
 
     specify "following CSS requires" do
-      touch_file 'app/assets/javascripts/other.css'
-      edit_file 'app/assets/javascripts/application.css', <<~EOF
-      /*
-       * = require other
-       */
+      touch_file 'app/assets/stylesheets/other.css'
+      edit_file 'app/assets/stylesheets/application.css', <<~EOF
+        /*
+         * = require other
+         */
       EOF
 
       vim.search 'other'

@@ -27,7 +27,7 @@ function! rails_extra#gf#Asset()
   let js_require_pattern     = '//\s*=\s*require \(\f\+\)\s*$'
   let coffee_require_pattern = '#\s*=\s*require \(\f\+\)\s*$'
   let css_require_pattern    = '\*\s*=\s*require \(\f\+\)\s*$'
-  let scss_import_pattern    = '@import "\(.\{-}\)";'
+  let scss_import_pattern    = '@import ["'']\(.\{-}\)["''];'
 
   if expand('%:e') =~ 'coffee' && line =~ coffee_require_pattern
     let path = rails_extra#util#ExtractRx(line, coffee_require_pattern, '\1')
@@ -112,9 +112,9 @@ function! rails_extra#gf#RspecMatcher()
 endfunction
 
 function! s:FindRailsFile(pattern)
-  let root = get(b:, 'rails_root', getcwd())
+  let root = s:GetRoot()
 
-  let matches = glob(root.'/'.a:pattern, 0, 1)
+  let matches = glob(root . a:pattern, 0, 1)
   if !empty(matches)
     return matches[0]
   else
