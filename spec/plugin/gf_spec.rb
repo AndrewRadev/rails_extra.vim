@@ -101,6 +101,30 @@ describe "gf mapping" do
       expect(current_line.strip).to eq 'def profile'
     end
 
+    specify "jumps to a route defined with explicit controller and action" do
+      write_file 'app/controllers/admin/users_controller.rb', <<~EOF
+        class Admin::UsersController < ApplicationController
+          def index
+          end
+
+          def profile
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          match '/admin/users', controller: 'admin/users', action: 'profile', via: 'get'
+        end
+      EOF
+
+      vim.search '\/admin\/users'
+      vim.command 'normal gf'
+
+      expect(current_file).to eq 'app/controllers/admin/users_controller.rb'
+      expect(current_line.strip).to eq 'def profile'
+    end
+
     # TODO (2020-05-06) Resource, resources
     # TODO (2020-05-06) explicit controller pattern
   end

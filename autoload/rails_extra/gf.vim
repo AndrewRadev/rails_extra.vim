@@ -62,12 +62,12 @@ function! rails_extra#gf#Route()
     return ''
   endif
 
-  if description !~ '^\k\+#\k\+$'
-    echomsg "Description doesn't look like controller#action: ".description
+  if description !~ '^[[:keyword:]/]\+#\k\+$'
+    echomsg "Description doesn't look like namespace/controller#action: ".description
     return ''
   endif
 
-  let nesting = s:FindRouteNesting()
+  let nesting = s:FindRouteNamespace()
   if len(nesting) > 0
     let file_prefix = join(nesting, '/').'/'
     let module_prefix = join(map(nesting, 'rails_extra#util#CapitalCamelCase(v:val)'), '::').'::'
@@ -122,7 +122,6 @@ function! s:FindRailsFile(pattern)
   endif
 endfunction
 
-" TODO (2016-05-12) Explicit "controller:" provided
 function! s:FindRouteDescription()
   let action = 'index'
 
@@ -153,10 +152,16 @@ function! s:FindRouteDescription()
     let [controller, action] = split(controller, '#')
   endif
 
-  let explicit_controller_pattern = 'controller\(:\| =>\)\s*[''"]\zs\k\+\ze[''"]'
+  let explicit_controller_pattern = 'controller\(:\| =>\)\s*[''"]\zs[[:keyword:]/]\+\ze[''"]'
   if getline('.') =~ explicit_controller_pattern
     " explicit controller specified, just use that
     let controller = matchstr(getline('.'), explicit_controller_pattern)
+  endif
+
+  let explicit_action_pattern = 'action\(:\| =>\)\s*[''"]\zs\k\+\ze[''"]'
+  if getline('.') =~ explicit_action_pattern
+    " explicit action specified, just use that
+    let action = matchstr(getline('.'), explicit_action_pattern)
   endif
 
   return controller.'#'.action
