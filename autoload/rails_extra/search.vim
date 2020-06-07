@@ -101,6 +101,61 @@ function! rails_extra#search#PosUnderCursor(pattern, ...)
   endtry
 endfunction
 
+" function! rails_extra#search#SearchSkip(pattern, skip, ...) {{{2
+" A partial replacement to search() that consults a skip pattern when
+" performing a search, just like searchpair().
+"
+" Note that it doesn't accept the "n" and "c" flags due to implementation
+" difficulties.
+function! rails_extra#search#SearchSkip(pattern, skip, ...)
+  " collect all of our arguments
+  let pattern = a:pattern
+  let skip    = a:skip
+
+  if a:0 >= 1
+    let flags = a:1
+  else
+    let flags = ''
+  endif
+
+  if stridx(flags, 'n') > -1
+    echoerr "Doesn't work with 'n' flag, was given: ".flags
+    return
+  endif
+
+  let stopline = (a:0 >= 2) ? a:2 : 0
+  let timeout  = (a:0 >= 3) ? a:3 : 0
+
+  " just delegate to search() directly if no skip expression was given
+  if skip == ''
+    return search(pattern, flags, stopline, timeout)
+  endif
+
+  " search for the pattern, skipping a match if necessary
+  let skip_match = 1
+  while skip_match
+    let match = search(pattern, flags, stopline, timeout)
+
+    " remove 'c' flag for any run after the first
+    let flags = substitute(flags, 'c', '', 'g')
+
+    if match && eval(skip)
+      let skip_match = 1
+    else
+      let skip_match = 0
+    endif
+  endwhile
+
+  return match
+endfunction
+
+function! rails_extra#search#SkipSyntax(syntax_groups)
+  let syntax_groups = a:syntax_groups
+  let skip_pattern  = '\%('.join(syntax_groups, '\|').'\)'
+
+  return "synIDattr(synID(line('.'),col('.'),1),'name') =~ '".skip_pattern."'"
+endfunction
+
 " Checks if the given column is within the given limits.
 "
 function! s:ColBetween(col, start, end)

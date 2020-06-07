@@ -53,7 +53,7 @@ endfunction
 
 function! rails_extra#gf#Route()
   if expand('%:p') !~ 'config/routes\.rb$'
-    return
+    return ''
   endif
   let root = s:GetRoot()
 
@@ -78,11 +78,12 @@ function! rails_extra#gf#Route()
 
   let [controller, action] = split(description, '#')
   let filename = root.'app/controllers/'.file_prefix.controller.'_controller.rb'
+
   if !filereadable(filename)
     return ''
   endif
 
-  call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action)
+  call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action.'\>')
   return filename
 endfunction
 
@@ -152,6 +153,11 @@ function! s:FindRouteDescription()
     let [controller, action] = split(controller, '#')
   endif
 
+  let wrapping_controller_block = s:FindRouteControllerBlock()
+  if wrapping_controller_block != ''
+    let controller = wrapping_controller_block
+  end
+
   let explicit_controller_pattern = 'controller\(:\| =>\)\s*[''"]\zs[[:keyword:]/]\+\ze[''"]'
   if getline('.') =~ explicit_controller_pattern
     " explicit controller specified, just use that
@@ -164,22 +170,57 @@ function! s:FindRouteDescription()
     let action = matchstr(getline('.'), explicit_action_pattern)
   endif
 
+  " Debug [controller, action]
+
   return controller.'#'.action
 endfunction
 
-function! s:FindRouteNesting()
-  " Find any parent routes
-  let indent = indent('.')
-  let route_path = []
-  let namespace_pattern = 'namespace :\zs\k\+'
+function! s:FindRouteControllerBlock()
+  try
+    let saved_position = winsaveview()
 
-  while search('^ \{,'.(indent - &sw).'}'.namespace_pattern, 'bW')
-    let route = expand('<cword>')
-    call insert(route_path, route, 0)
+    " Find any parent routes
     let indent = indent('.')
-  endwhile
+    let route_path = []
+    let controller_pattern = 'controller :\zs\k\+'
 
-  return route_path
+    if search('^ \{,'.(indent - &sw).'}'.controller_pattern, 'bW')
+      return expand('<cword>')
+    else
+      return ''
+    endif
+  finally
+    call winrestview(saved_position)
+  endtry
+endfunction
+
+function! s:FindRouteNamespace()
+  try
+    let saved_position = winsaveview()
+
+    " Find any parent routes
+    let indent = indent('.')
+    let route_path = []
+    let namespace_pattern = '\%(namespace\|\S.\{-}module\)\%(:\|\s*=>\)\s*[''":]\zs\k\+'
+    let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
+    let skip = rails_extra#search#SkipSyntax(['String', 'Comment'])
+
+    while rails_extra#search#SearchSkip(indented_namespace_pattern, skip, 'bW')
+      let route = expand('<cword>')
+      call insert(route_path, route, 0)
+      let indent = indent('.')
+
+      if indent == 0
+        let indented_namespace_pattern = '^'.namespace_pattern
+      else
+        let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
+      endif
+    endwhile
+
+    return route_path
+  finally
+    call winrestview(saved_position)
+  endtry
 endfunction
 
 function! s:GetRoot()

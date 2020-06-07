@@ -77,7 +77,7 @@ describe "gf mapping" do
   end
 
   describe "Routes" do
-    specify "jumps to a particular controller, on a particular action" do
+    specify "controller#action syntax" do
       write_file 'app/controllers/users_controller.rb', <<~EOF
         class UsersController < ApplicationController
           def index
@@ -101,7 +101,7 @@ describe "gf mapping" do
       expect(current_line.strip).to eq 'def profile'
     end
 
-    specify "jumps to a route defined with explicit controller and action" do
+    specify "controller: and action: keys" do
       write_file 'app/controllers/admin/users_controller.rb', <<~EOF
         class Admin::UsersController < ApplicationController
           def index
@@ -125,8 +125,79 @@ describe "gf mapping" do
       expect(current_line.strip).to eq 'def profile'
     end
 
-    # TODO (2020-05-06) Resource, resources
-    # TODO (2020-05-06) explicit controller pattern
+    specify "controller do block" do
+      write_file 'app/controllers/users_controller.rb', <<~EOF
+        class UsersController < ApplicationController
+          def index
+          end
+
+          def profile
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          controller :users do
+            get 'users/profile', action: :profile
+          end
+        end
+      EOF
+
+      vim.search 'users\/profile'
+      vim.command 'normal gf'
+
+      expect(current_file).to eq 'app/controllers/users_controller.rb'
+      expect(current_line.strip).to eq 'def profile'
+    end
+
+    specify "resources: jumps to index" do
+      write_file 'app/controllers/users_controller.rb', <<~EOF
+        class UsersController < ApplicationController
+          def index
+          end
+
+          def profile
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          resources :users
+        end
+      EOF
+
+      vim.search 'users'
+      vim.command 'normal gf'
+
+      expect(current_file).to eq 'app/controllers/users_controller.rb'
+      expect(current_line.strip).to eq 'def index'
+    end
+
+    specify "resource: jumps to show" do
+      write_file 'app/controllers/profiles_controller.rb', <<~EOF
+        class ProfilesController < ApplicationController
+          def index
+          end
+
+          def show
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          resource :profile
+        end
+      EOF
+
+      vim.search 'profile'
+      vim.command 'normal gf'
+
+      expect(current_file).to eq 'app/controllers/profiles_controller.rb'
+      expect(current_line.strip).to eq 'def show'
+    end
   end
 
   describe "Factories" do
