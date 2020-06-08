@@ -182,7 +182,7 @@ function! s:FindRouteControllerBlock()
     " Find any parent routes
     let indent = indent('.')
     let route_path = []
-    let controller_pattern = 'controller :\zs\k\+'
+    let controller_pattern = 'controller [''":]\zs\k\+'
 
     if search('^ \{,'.(indent - &sw).'}'.controller_pattern, 'bW')
       return expand('<cword>')
@@ -203,7 +203,7 @@ function! s:FindRouteNamespace()
     let route_path = []
     let namespace_pattern = '\%(namespace\|\S.\{-}module\)\%(:\|\s*=>\)\s*[''":]\zs\k\+'
     let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
-    let skip = rails_extra#search#SkipSyntax(['String', 'Comment'])
+    let skip = rails_extra#search#SkipSyntax(['Comment'])
 
     while rails_extra#search#SearchSkip(indented_namespace_pattern, skip, 'bW')
       let route = expand('<cword>')
