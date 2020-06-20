@@ -145,6 +145,8 @@ function! s:FindRouteDescription()
     let controller = expand('<cfile>')
   elseif rails_extra#search#UnderCursor('"[^"]\+"') > 0
     let controller = expand('<cfile>')
+  else
+    let controller = ''
   endif
 
   if controller =~ '^\k\+#\k\+$'
