@@ -43,3 +43,16 @@ function! rails_extra#util#ExtractRx(expr, pat, sub)
 
   return substitute(a:expr, rx, a:sub, '')
 endfunction
+
+" Wrap the native filereadable() function to provide some debug logging.
+function! rails_extra#util#Filereadable(filename)
+  call rails_extra#util#Debug(" Checking existence of file: ".a:filename)
+  return filereadable(a:filename)
+endfunction
+
+function! rails_extra#util#Debug(message)
+  if exists('g:rails_extra_debug') && g:rails_extra_debug
+    let message = '[rails_extra]'.a:message
+    echomsg message
+  endif
+endfunction

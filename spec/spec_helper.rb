@@ -17,6 +17,9 @@ Vimrunner::RSpec.configure do |config|
     vim.command 'autocmd BufNewFile,BufRead *.coffee set filetype=coffee'
     vim.command 'autocmd BufNewFile,BufRead *.scss set filetype=scss'
 
+    # set debug mode to get more info in :messages
+    vim.command 'let g:rails_extra_debug = 1'
+
     vim
   end
 end

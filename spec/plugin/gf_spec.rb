@@ -198,6 +198,70 @@ describe "gf mapping" do
       expect(current_file).to eq 'app/controllers/profiles_controller.rb'
       expect(current_line.strip).to eq 'def show'
     end
+
+    describe "namespaces" do
+      specify "using `namespace`" do
+        write_file 'app/controllers/app/right/users_controller.rb', <<~EOF
+          class App::Right::UsersController < ApplicationController
+            def index
+            end
+
+            def show
+            end
+          end
+        EOF
+
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            namespace :app do
+              namespace :right do
+                namespace :wrong do
+                  resource :other
+                end
+
+                test do
+                  resources :users
+                end
+              end
+            end
+          end
+        EOF
+
+        vim.search 'users'
+        vim.command 'normal gf'
+
+        expect(current_file).to eq 'app/controllers/app/right/users_controller.rb'
+        expect(current_line.strip).to eq 'def index'
+      end
+
+      specify "using `scope`" do
+        write_file 'app/controllers/app/bar/users_controller.rb', <<~EOF
+          class App::Bar::UsersController < ApplicationController
+            def index
+            end
+
+            def show
+            end
+          end
+        EOF
+
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            scope :app, module: 'app' do
+              scope "foo", module: 'bar' do
+                resources :users
+              end
+            end
+          end
+        EOF
+
+        vim.search 'users'
+        vim.command 'normal gf'
+
+        expect(current_file).to eq 'app/controllers/app/bar/users_controller.rb'
+        expect(current_line.strip).to eq 'def index'
+      end
+    end
   end
 
   describe "Factories" do

@@ -79,11 +79,10 @@ function! rails_extra#gf#Route()
   let [controller, action] = split(description, '#')
   let filename = root.'app/controllers/'.file_prefix.controller.'_controller.rb'
 
-  if !filereadable(filename)
-    return ''
+  if filereadable(filename)
+    call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action.'\>')
   endif
 
-  call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action.'\>')
   return filename
 endfunction
 
@@ -170,8 +169,6 @@ function! s:FindRouteDescription()
     let action = matchstr(getline('.'), explicit_action_pattern)
   endif
 
-  " Debug [controller, action]
-
   return controller.'#'.action
 endfunction
 
@@ -197,17 +194,34 @@ endfunction
 function! s:FindRouteNamespace()
   try
     let saved_position = winsaveview()
+    let route_line = line('.')
 
     " Find any parent routes
     let indent = indent('.')
-    let route_path = []
-    let namespace_pattern = '\%(namespace\|\S.\{-}module\)\%(:\|\s*=>\)\s*[''":]\zs\k\+'
+    let namespace_path = []
+    let namespace_pattern = '\%(namespace\|\S.\{-}module\s*\%(:\|\s*=>\)\)\s*[''":]\zs\k\+'
     let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
     let skip = rails_extra#search#SkipSyntax(['Comment'])
 
     while rails_extra#search#SearchSkip(indented_namespace_pattern, skip, 'bW')
-      let route = expand('<cword>')
-      call insert(route_path, route, 0)
+      let namespace = expand('<cword>')
+
+      " check the line limits of this line
+      let namespace_start_line = line('.')
+      let namespace_end_line = s:FindMatchingEndLine()
+      exe namespace_start_line
+
+      if namespace_end_line <= 0 || namespace_start_line == namespace_end_line
+        " something's wrong with this pattern or matchit's not quite working
+        continue
+      endif
+
+      if route_line <= namespace_start_line || route_line >= namespace_end_line
+        " the current route is not within this namespace
+        continue
+      endif
+
+      call insert(namespace_path, namespace, 0)
       let indent = indent('.')
 
       if indent == 0
@@ -217,7 +231,7 @@ function! s:FindRouteNamespace()
       endif
     endwhile
 
-    return route_path
+    return namespace_path
   finally
     call winrestview(saved_position)
   endtry
@@ -225,4 +239,20 @@ endfunction
 
 function! s:GetRoot()
   return get(b:, 'rails_root', getcwd()).'/'
+endfunction
+
+" Essentially a reimplementation of matchit's behaviour, because matchit
+" itself uses code that's not allowed here.
+function! s:FindMatchingEndLine()
+  let skip = rails_extra#search#SkipSyntax(['String', 'Symbol', 'Comment'])
+
+  let start_pattern  = '{\|\<\%(if\|unless\|case\|while\|until\|for\|do\|class\|module\|def\|=\@<!begin\)\>=\@!'
+  let middle_pattern = '\<\%(else\|elsif\|ensure\|when\|rescue\|break\|redo\|next\|retry\)\>'
+  let end_pattern    = '}\|\%(^\|[^.\:@$=]\)\@<=\<end\:\@!\>'
+
+  if search(start_pattern, 'Wc', line('.')) <= 0
+    return 0
+  endif
+
+  return searchpair(start_pattern, middle_pattern, end_pattern, 'W', skip)
 endfunction

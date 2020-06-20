@@ -12,7 +12,7 @@ function! rails_extra#Includeexpr()
   for callback in callbacks
     let filename = call(callback, [])
 
-    if filename != '' && filereadable(filename)
+    if filename != '' && rails_extra#util#Filereadable(filename)
       return filename
     endif
   endfor
