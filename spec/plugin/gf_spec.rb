@@ -14,7 +14,7 @@ describe "gf mapping" do
         <%= t('users.page.heading') %>
       EOF
       vim.search 'users'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'config/locales/en.yml'
       expect(current_line).to include 'heading: "Users page"'
@@ -32,7 +32,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/assets/stylesheets/other.scss'
     end
@@ -44,7 +44,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/assets/javascripts/other.js'
     end
@@ -56,7 +56,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/assets/javascripts/other.js'
     end
@@ -70,35 +70,67 @@ describe "gf mapping" do
       EOF
 
       vim.search 'other'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/assets/stylesheets/other.css'
     end
   end
 
   describe "Routes" do
-    specify "controller#action syntax" do
-      write_file 'app/controllers/users_controller.rb', <<~EOF
-        class UsersController < ApplicationController
-          def index
+    describe "controller#action" do
+      before :each do
+        write_file 'app/controllers/users_controller.rb', <<~EOF
+          class UsersController < ApplicationController
+            def index
+            end
+
+            def profile
+            end
           end
+        EOF
+      end
 
-          def profile
+      specify "route => target" do
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            get 'route' => 'users#profile'
           end
-        end
-      EOF
+        EOF
 
-      edit_file 'config/routes.rb', <<~EOF
-        Rails.application.routes.draw do
-          get '/users/profile' => 'users#profile'
-        end
-      EOF
+        vim.search 'users#profile'
+        vim.feedkeys('gf')
 
-      vim.search 'users#profile'
-      vim.command 'normal gf'
+        expect(current_file).to eq 'app/controllers/users_controller.rb'
+        expect(current_line.strip).to eq 'def profile'
+      end
 
-      expect(current_file).to eq 'app/controllers/users_controller.rb'
-      expect(current_line.strip).to eq 'def profile'
+      specify "to: target" do
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            get 'route', to: 'users#profile'
+          end
+        EOF
+
+        vim.search 'users#profile'
+        vim.feedkeys('gf')
+
+        expect(current_file).to eq 'app/controllers/users_controller.rb'
+        expect(current_line.strip).to eq 'def profile'
+      end
+
+      specify ":to => target" do
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            get 'route', :to => 'users#profile'
+          end
+        EOF
+
+        vim.search 'users#profile'
+        vim.feedkeys('gf')
+
+        expect(current_file).to eq 'app/controllers/users_controller.rb'
+        expect(current_line.strip).to eq 'def profile'
+      end
     end
 
     specify "controller: and action: keys" do
@@ -119,7 +151,7 @@ describe "gf mapping" do
       EOF
 
       vim.search '\/admin\/users'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/controllers/admin/users_controller.rb'
       expect(current_line.strip).to eq 'def profile'
@@ -145,7 +177,33 @@ describe "gf mapping" do
       EOF
 
       vim.search 'users\/profile'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'app/controllers/users_controller.rb'
+      expect(current_line.strip).to eq 'def profile'
+    end
+
+    specify "controller do block is lower priority than an explicit one" do
+      write_file 'app/controllers/users_controller.rb', <<~EOF
+        class UsersController < ApplicationController
+          def index
+          end
+
+          def profile
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          controller :other do
+            get 'users/profile', controller: :users, action: :profile
+          end
+        end
+      EOF
+
+      vim.search 'users\/profile'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/controllers/users_controller.rb'
       expect(current_line.strip).to eq 'def profile'
@@ -169,7 +227,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'users'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/controllers/users_controller.rb'
       expect(current_line.strip).to eq 'def index'
@@ -193,7 +251,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'profile'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'app/controllers/profiles_controller.rb'
       expect(current_line.strip).to eq 'def show'
@@ -228,7 +286,7 @@ describe "gf mapping" do
         EOF
 
         vim.search 'users'
-        vim.command 'normal gf'
+        vim.feedkeys('gf')
 
         expect(current_file).to eq 'app/controllers/app/right/users_controller.rb'
         expect(current_line.strip).to eq 'def index'
@@ -256,7 +314,7 @@ describe "gf mapping" do
         EOF
 
         vim.search 'users'
-        vim.command 'normal gf'
+        vim.feedkeys('gf')
 
         expect(current_file).to eq 'app/controllers/app/bar/users_controller.rb'
         expect(current_line.strip).to eq 'def index'
@@ -281,7 +339,7 @@ describe "gf mapping" do
       EOF
 
       vim.search ':\zsuser'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'test/factories.rb'
       expect(current_line.strip).to eq 'factory :user do'
@@ -296,7 +354,7 @@ describe "gf mapping" do
       EOF
 
       vim.search 'wibble'
-      vim.command 'normal gf'
+      vim.feedkeys('gf')
 
       expect(current_file).to eq 'spec/support/matchers/wibble_and_wobble_matcher.rb'
     end

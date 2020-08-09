@@ -132,14 +132,29 @@ function! s:FindRouteDescription()
     let controller = rails#pluralize(expand('<cword>'))
     let action = 'show'
   elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+:\zs\k\+') > 0 ||
-        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\zs\k\+\ze[''"]') > 0
-    let action = expand('<cword>')
-    if search('^\s*resources\= :\zs\k\+\ze\%(.*\) do$', 'b') < 0
-      echomsg "Found the action '".action."', but can't find a containing resource."
-      return ''
+        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs\k\+\ze[''"]') > 0
+    " Examples:
+    " - get :route
+    " - get 'route'
+    " - get '/route'
+    "
+    if search(',\s*\%(to:\|:to\s*=>\)\s*[''"]\zs\k\+#\k\+[''"]', 'W', line('.'))
+      " Examples:
+      " - get :route, to: 'controller#action'
+      "
+      let controller = expand('<cfile>')
+    else
+      let action = expand('<cword>')
+      if search('^\s*resources\= :\zs\k\+\ze\%(.*\) do$', 'b') < 0
+        echomsg "Found the action '".action."', but can't find a containing resource."
+        return ''
+      endif
+      let controller = expand('<cword>')
     endif
-    let controller = expand('<cword>')
   elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\zs\k\+/\k\+\ze[''"]') > 0
+    " Examples:
+    " - get 'controller/action'
+    "
     let [controller, action] = split(expand('<cfile>'), '/')
   elseif rails_extra#search#UnderCursor('''[^'']\+''') > 0
     let controller = expand('<cfile>')
@@ -154,10 +169,12 @@ function! s:FindRouteDescription()
     let [controller, action] = split(controller, '#')
   endif
 
-  let wrapping_controller_block = s:FindRouteControllerBlock()
-  if wrapping_controller_block != ''
-    let controller = wrapping_controller_block
-  end
+  if controller == ''
+    let wrapping_controller_block = s:FindRouteControllerBlock()
+    if wrapping_controller_block != ''
+      let controller = wrapping_controller_block
+    end
+  endif
 
   let explicit_controller_pattern = 'controller\(:\| =>\)\s*[''"]\zs[[:keyword:]/]\+\ze[''"]'
   if getline('.') =~ explicit_controller_pattern
