@@ -1,24 +1,84 @@
 let s:http_method_pattern = '\<\%(get\|post\|put\|delete\|patch\)\>'
 
-" TODO (2020-04-26) Check for files other than en.yml
+" TODO (2020-09-13) Configurable default language, consider a sorted list?
 function! rails_extra#gf#Translation()
   let saved_iskeyword = &iskeyword
 
-  set iskeyword+=.
-  if !rails_extra#search#UnderCursor('\%(I18n\.\)\=t(\=\s*[''"]\zs\k\+[''"]')
+  try
+    set iskeyword+=.
+    if !rails_extra#search#UnderCursor('\%(I18n\.\)\=t(\=\s*[''"]\zs\k\+[''"]')
+      let &iskeyword = saved_iskeyword
+      return ''
+    endif
+
+    let translation_key = expand('<cword>')
+
+    " Build up search queries for the parts of the key:
+    let search_args = map(split(translation_key, '\.'), '"^\\s*\\zs".v:val.":"')
+    if len(search_args) == 0
+      return ''
+    endif
+
+    let root = s:GetRoot()
+    let translations_file = ''
+    let candidate_ranks = {}
+
+    " Which of the translation files holds this key?
+    for candidate_file in split(glob(root.'config/locales/**/en.yml'), "\n")
+      let unmatched_search = copy(search_args)
+
+      for line in readfile(candidate_file)
+        " If the current line fits, we can consider this part a match so far,
+        " move on to the next one:
+        if line =~ unmatched_search[0]
+          call remove(unmatched_search, 0)
+        endif
+
+        if len(unmatched_search) == 0
+          break
+        endif
+      endfor
+
+      if len(unmatched_search) == 0
+        let translations_file = candidate_file
+        break
+      else
+        " If we've gotten a partial match, let's keep it for later:
+        let candidate_ranks[candidate_file] = len(search_args) - len(unmatched_search)
+      endif
+    endfor
+
+    " Even if we haven't found a match, a *partial* match will be convenient
+    " so we can add a new key:
+    "
+    " TODO (2020-09-13) Extract a setting to enable
+    "
+    if translations_file == ''
+      let best_match = ''
+      let best_rank = 0
+
+      for [file, rank] in items(candidate_ranks)
+        if rank > best_rank
+          let best_match = file
+          let best_rank = rank
+        endif
+      endfor
+
+      if best_rank > 0
+        let translations_file = best_match
+      endif
+    endif
+
+    if translations_file != ''
+      let callback_args = [translations_file]
+      call extend(callback_args, search_args)
+      call call('rails_extra#SetFileOpenCallbackSearch', callback_args)
+    endif
+
+    return translations_file
+  finally
     let &iskeyword = saved_iskeyword
-    return ''
-  endif
-
-  let translation_key = expand('<cword>')
-  let translations_file = fnamemodify('config/locales/en.yml', ':p')
-
-  let callback_args = [translations_file]
-  call extend(callback_args, split(translation_key, '\.'))
-  call call('rails_extra#SetFileOpenCallbackSearch', callback_args)
-
-  let &iskeyword = saved_iskeyword
-  return translations_file
+  endtry
 endfunction
 
 function! rails_extra#gf#Asset()

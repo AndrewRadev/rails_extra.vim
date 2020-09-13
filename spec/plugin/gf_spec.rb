@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "gf mapping" do
   describe "Translations" do
-    specify "finding a translation key" do
+    specify "finding a key" do
       write_file 'config/locales/en.yml', <<~EOF
         en:
           users:
@@ -20,8 +20,66 @@ describe "gf mapping" do
       expect(current_line).to include 'heading: "Users page"'
     end
 
-    # TODO (2020-05-06) Other translation files
-    # TODO (2020-05-06) Missing translation keys
+    specify "finding a key in a nested file" do
+      write_file 'config/locales/nested/en.yml', <<~EOF
+        en:
+          users:
+            page:
+              heading: "Users page"
+      EOF
+
+      edit_file 'app/views/users/index.erb', <<-EOF
+        <%= t('users.page.heading') %>
+      EOF
+      vim.search 'users'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'config/locales/nested/en.yml'
+      expect(current_line).to include 'heading: "Users page"'
+    end
+
+    specify "key duplication with nesting" do
+      pending "Difficult case, needs some thinking"
+
+      write_file 'config/locales/en.yml', <<~EOF
+        en:
+          nested:
+            users:
+              page:
+                nested:
+                  heading: "Wrong!"
+          users:
+            page:
+              heading: "Users page"
+      EOF
+
+      edit_file 'app/views/users/index.erb', <<-EOF
+        <%= t('users.page.heading') %>
+      EOF
+      vim.search 'users'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'config/locales/en.yml'
+      expect(current_line).to include 'heading: "Users page"'
+    end
+
+    specify "partial matches" do
+      write_file 'config/locales/en.yml', <<~EOF
+        en:
+          users:
+            page:
+              body: "Users body"
+      EOF
+
+      edit_file 'app/views/users/index.erb', <<-EOF
+        <%= t('users.page.heading') %>
+      EOF
+      vim.search 'users'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'config/locales/en.yml'
+      expect(current_line).to include 'page:'
+    end
   end
 
   describe "Asset imports" do
