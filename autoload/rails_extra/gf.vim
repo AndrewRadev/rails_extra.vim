@@ -123,6 +123,7 @@ function! s:FindRailsFile(pattern)
 endfunction
 
 function! s:FindRouteDescription()
+  let controller = ''
   let action = 'index'
 
   if rails_extra#search#UnderCursor('resources :\zs\k\+') > 0
@@ -132,42 +133,37 @@ function! s:FindRouteDescription()
     let controller = rails#pluralize(expand('<cword>'))
     let action = 'show'
   elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+:\zs\k\+') > 0 ||
-        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs\k\+\ze[''"]') > 0
+        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs[[:keyword:]/#]\+\ze[''"]') > 0
     " Examples:
-    " - get :route
-    " - get 'route'
-    " - get '/route'
+    " - get '<something>', **options
     "
     if search(',\s*\%(to:\|:to\s*=>\)\s*[''"]\zs\k\+#\k\+[''"]', 'W', line('.'))
       " Examples:
       " - get :route, to: 'controller#action'
       "
-      let controller = expand('<cfile>')
+      let [controller, action] = split(expand('<cfile>'), '#')
+    elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\zs\k\+#\k\+\ze[''"]') > 0
+      " Examples:
+      " - get 'controller#action'
+      "
+      let [controller, action] = split(expand('<cfile>'), '#')
+    elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\zs\k\+/\k\+\ze[''"]') > 0
+      " Examples:
+      " - get 'controller/action'
+      "
+      let [controller, action] = split(expand('<cfile>'), '/')
     else
       let action = expand('<cword>')
-      if search('^\s*resources\= :\zs\k\+\ze\%(.*\) do$', 'b') < 0
-        echomsg "Found the action '".action."', but can't find a containing resource."
-        return ''
-      endif
-      let controller = expand('<cword>')
     endif
-  elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\zs\k\+/\k\+\ze[''"]') > 0
-    " Examples:
-    " - get 'controller/action'
-    "
-    let [controller, action] = split(expand('<cfile>'), '/')
-  elseif rails_extra#search#UnderCursor('''[^'']\+''') > 0
-    let controller = expand('<cfile>')
-  elseif rails_extra#search#UnderCursor('"[^"]\+"') > 0
-    let controller = expand('<cfile>')
-  else
-    let controller = ''
   endif
 
-  if controller =~ '^\k\+#\k\+$'
-    " then it's a controller#action descriptor, let's split it for consistency
-    let [controller, action] = split(controller, '#')
-  endif
+  " elseif rails_extra#search#UnderCursor('''[^'']\+''') > 0
+  "   let controller = expand('<cfile>')
+  " elseif rails_extra#search#UnderCursor('"[^"]\+"') > 0
+  "   let controller = expand('<cfile>')
+  " else
+  "   let controller = ''
+  " endif
 
   if controller == ''
     let wrapping_controller_block = s:FindRouteControllerBlock()
@@ -188,6 +184,11 @@ function! s:FindRouteDescription()
     let action = matchstr(getline('.'), explicit_action_pattern)
   endif
 
+  if controller == ''
+    return ''
+  endif
+
+  call rails_extra#util#Debug(' controller#action detected: '.controller.'#'.action)
   return controller.'#'.action
 endfunction
 
@@ -249,6 +250,8 @@ function! s:FindRouteNamespace()
         let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
       endif
     endwhile
+
+    call rails_extra#util#Debug(' Namespace detected: '.join(namespace_path, '/'))
 
     return namespace_path
   finally

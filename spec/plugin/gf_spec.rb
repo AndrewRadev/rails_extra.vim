@@ -320,6 +320,38 @@ describe "gf mapping" do
         expect(current_line.strip).to eq 'def index'
       end
     end
+
+    describe "messy cases" do
+      specify "example" do
+        write_file 'app/controllers/site/home_controller.rb', <<~EOF
+          class App::Bar::UsersController < ApplicationController
+            def index
+            end
+
+            def example_action
+            end
+          end
+        EOF
+
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            scope :module => "site" do
+              some_other_block do
+                controller :home do
+                  get '/example', :action => 'example_action'
+                end
+              end
+            end
+          end
+        EOF
+
+        vim.search 'example_action'
+        vim.feedkeys('gf')
+
+        expect(current_file).to eq 'app/controllers/site/home_controller.rb'
+        expect(current_line.strip).to eq 'def example_action'
+      end
+    end
   end
 
   describe "Factories" do
