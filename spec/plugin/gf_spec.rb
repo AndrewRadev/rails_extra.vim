@@ -434,6 +434,28 @@ describe "gf mapping" do
       expect(current_file).to eq 'test/factories.rb'
       expect(current_line.strip).to eq 'factory :user do'
     end
+
+    specify "jumps to a factory definition from a `create_list` call" do
+      write_file 'test/factories.rb', <<~EOF
+        FactoryBot.define do
+          factory :other do
+          end
+
+          factory :user do
+          end
+        end
+      EOF
+
+      edit_file 'app/controllers/users_controller.rb', <<~EOF
+        users = create_list :user, 2, name: "Placeholder"
+      EOF
+
+      vim.search ':\zsuser'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'test/factories.rb'
+      expect(current_line.strip).to eq 'factory :user do'
+    end
   end
 
   describe "RSpec matchers" do

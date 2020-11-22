@@ -147,7 +147,7 @@ function! rails_extra#gf#Route()
 endfunction
 
 function! rails_extra#gf#Factory()
-  if rails_extra#search#UnderCursor('\<\%(build\|create\|attributes_for\)[ (]:\zs\k\+') > 0
+  if rails_extra#search#UnderCursor('\<\%(build\|create\|attributes_for\)\%(_list\)\=[ (]:\zs\k\+') > 0
     let factory = expand('<cword>')
     let [filename, lineno] = rails_extra#edit#FindFactory(factory)
 
