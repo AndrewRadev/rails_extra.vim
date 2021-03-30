@@ -1,3 +1,6 @@
+[![GitHub version](https://badge.fury.io/gh/andrewradev%2Frails_extra.vim.svg)](https://badge.fury.io/gh/andrewradev%2Frails_extra.vim)
+[![Build Status](https://secure.travis-ci.org/AndrewRadev/rails_extra.vim.svg?branch=master)](http://travis-ci.org/AndrewRadev/rails_extra.vim)
+
 ## Usage
 
 Depends on [vim-rails](https://github.com/tpope/vim-rails) -- please make sure that's installed first.
