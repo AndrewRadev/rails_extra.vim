@@ -4,6 +4,5 @@ end
 
 desc "Prepare archive for deployment"
 task :archive do
-  puts "TODO"
-  # sh 'zip -r ~/rails_extra.zip doc/rails_extra.txt'
+  sh 'zip -r ~/rails_extra.zip autoload/ doc/rails_extra.txt plugin/'
 end

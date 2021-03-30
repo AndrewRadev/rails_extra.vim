@@ -1,4 +1,4 @@
-*rails_extra.txt*	TODO
+*rails_extra.txt*	Extra tools to complement vim-rails
 
 ==============================================================================
 CONTENTS                                        *rails_extra*   *rails_extra-contents*
@@ -6,49 +6,182 @@ CONTENTS                                        *rails_extra*   *rails_extra-con
     Installation................................: |rails_extra-installation|
     Usage.......................................: |rails_extra-usage|
     Settings....................................: |rails_extra-settings|
-    Internals...................................: |rails_extra-internals|
+    Advanced....................................: |rails_extra-advanced|
     Issues......................................: |rails_extra-issues|
 
 
 ==============================================================================
-INSTALLATION                                            *rails_extra-installation*
+INSTALLATION                                          *rails_extra-installation*
 
-There are several ways to install the plugin. The recommended one is by using
-Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
-that case, you can clone the plugin's git repository like so:
+The easiest way to install the plugin is with a plugin manager:
+
+- vim-plug: https://github.com/junegunn/vim-plug
+- Vundle:   https://github.com/VundleVim/Vundle.vim
+
+If you use one, just follow the instructions in its documentation.
+
+Note that this plugin depends on Tim Pope's vim-rails:
+https://github.com/tpope/vim-rails. Be sure to install that one as well, or
+rails_extra won't work.
+
+You can install the plugin yourself using Vim's |packages| functionality by
+cloning the project (or adding it as a submodule) under
+`~/.vim/pack/<any-name>/start/`. For example:
 >
-    git clone https://github.com/AndrewRadev/rails_extra.vim ~/.vim/bundle/rails_extra
+    git clone https://github.com/AndrewRadev/rails_extra.vim \
+        ~/.vim/pack/_/start/rails_extra
 <
-If your vim configuration is under git version control, you could also set up
-the repository as a submodule, which would allow you to update more easily.
-The command is (provided you're in ~/.vim):
+This should automatically load the plugin for you on Vim start. Alternatively,
+you can add it to `~/.vim/pack/<any-name>/opt/` instead and load it in your
+.vimrc manually with:
 >
-    git submodule add https://github.com/AndrewRadev/rails_extra.vim bundle/rails_extra
+    packadd rails_extra
+<
+If you'd rather not use git, you can download the files from the "releases"
+tab and unzip them in the relevant directory:
+https://github.com/AndrewRadev/rails_extra.vim/releases.
+
+
+==============================================================================
+USAGE                                                        *rails_extra-usage*
+
+The plugin defines some extra tools to work with Rails projects. Some of them
+might be a bit hacky, use heuristics, or support non-standard Rails tools,
+which might mean they don't necessarily make sense for vim-rails PRs.
+
+Edit commands ~
+
+There are several extra editing commands you can use that are similar to what
+vim-rails provides. These are defined as buffer-local commands in rails
+project files, just like vim-rails does it. If you'd like to define them
+globally, see the |rails_extra-advanced| section below.
+>
+    :Eschema <table-name>
+<
+This will open the `schema.rb` file or the `structure.sql` file and attempt to
+jump to the given table name. It'll tab-complete said table names (for
+`structure.sql` in particular, this might not work well, because it depends on
+the specific database dump format -- PRs welcome for wider support).
+>
+    :Efactory <factory-name>
+<
+This will attempt to jump to a `factory_bot`
+(https://github.com/thoughtbot/factory_bot) factory definition. You can use
+vim-projectionist for factories, but that approach will only pick out
+factories in separate files. This `:Efactory` command does some extra work to
+parse all the factory bot files for definitions -- this will mean it's slower,
+so your mileage might vary.
+
+Go to file ~
+
+Vim-rails makes the |gf| family of mappings (|CTRL-W_f|, |CTRL-W_gf|, etc)
+extremely powerful, allowing you to |gf| from a model name into that model,
+jump through partials and a lot more. Rails-extra tries to add a few more
+tools to that mix.
+
+Translations:
+>
+    # gf will try to jump to that key in `config/locale/en.yml`:
+    t("foo.bar.baz")
+<
+Assets:
+>
+    # jump to the file in the asset pipeline
+    //= require 'some_file'
+
+    # jump to the SCSS import
+    @import "some_file"
+<
+Routes in `config/routes.rb` (doesn't work for everything, but a few examples):
+>
+    resources :users
+
+    get 'route', to: 'users#profile'
+
+    controller :home do
+      get '/example', :action => 'example_action'
+    end
+<
+Factory bot factories -- cursor on the factory name:
+>
+    create :user, :admin, name: 'Example'
+
+    build_stubbed :product
+
+    attributes_for :post
+<
+Custom RSpec matchers -- cursor on the matcher:
+>
+    # Would jump to: spec/support/matchers/wibble_and_wobble_matcher.rb
+    expect(timey_wimey_stuff).to wibble_and_wobble(42)
 <
 
-Another way is to simply copy all the essential directories inside the ~/.vim
-directory: TODO list of directories
+Expect these to not quite work at 100% all the time. There's lots of ways to
+configure and organize code, so the above examples make guesses based on my
+own experience. If you have a different setup, please open a github issue and
+describe your case -- I might be able to support it.
 
 
 ==============================================================================
-USAGE                                                          *rails_extra-usage*
+SETTINGS                                                  *rails_extra-settings*
 
-TODO
+                                                   *g:rails_extra_edit_commands*
+>
+    let g:rails_extra_edit_commands = 0
+<
+Default value: 1
+
+Whether the plugin should define its buffer-local commands. True (1) by
+default, but you can set it to false (0) if you don't care about the commands
+or they get in the way of the ones you've defined using vim-projectionist.
+
+                                                              *g:rails_extra_gf*
+>
+    let g:rails_extra_gf = 0
+<
+Default value: 1
+
+Whether the plugin should extend vim-rails' gf mapping with its own extras.
+Set to true (1), but you can set it to false (0) if you run into problems with
+the gf extensions or don't care for them. Consider opening a github issue
+describing your problem -- it might be fixable.
 
 
 ==============================================================================
-SETTINGS                                                    *rails_extra-settings*
+ADVANCED                                                  *rails_extra-advanced*
 
-TODO
+If you'd like to be able to run the edit commands on empty buffers, you could
+define them globally. This means you'd be polluting the global namespace,
+causing problems if you have other kinds of project you'd like to work on.
+
+This might make sense in 1) a project-specific file that only activates when
+you decide to "edit a project" -- it's what I do. Or, if you 2) name your
+global commands in a rails-specific way.
+
+For each editing command defined by this plugin, there's going to be two
+functions that let it work:
+>
+    rails_extra#edit#<Target>
+    rails_extra#edit#Complete<Target>
+<
+Where "Target" is one of the supported commands, "Schema" or "Factory" for the
+moment.
+
+So, if you wanted to define global commands called `RailsEdit<Target>`, you
+could put this in your .vimrc:
+>
+    command! -nargs=* -complete=custom,rails_extra#edit#CompleteSchema
+        \ RailsEditSchema call rails_extra#edit#Schema(<q-args>)
+
+    command! -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
+        \ RailsEditFactory call rails_extra#edit#Factory(<q-args>)
+<
+These should work just as well as the buffer-local ones, with completion and
+everything.
 
 
 ==============================================================================
-INTERNALS                                                  *rails_extra-internals*
-
-TODO
-
-==============================================================================
-ISSUES                                                        *rails_extra-issues*
+ISSUES                                                      *rails_extra-issues*
 
 Any issues and suggestions are very welcome on the github bugtracker:
 https://github.com/AndrewRadev/rails_extra.vim/issues
