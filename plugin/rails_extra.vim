@@ -2,7 +2,7 @@ if exists('g:loaded_rails_extra') || &cp
   finish
 endif
 
-let g:loaded_rails_extra = '0.0.1' " version number
+let g:loaded_rails_extra = '0.1.0' " version number
 let s:keepcpo = &cpo
 set cpo&vim
 
