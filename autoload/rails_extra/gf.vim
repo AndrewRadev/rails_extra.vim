@@ -122,7 +122,7 @@ function! rails_extra#gf#Route()
     return ''
   endif
 
-  if description !~ '^[[:keyword:]/]\+#\k\+$'
+  if description !~ '^\%(\k\|\/\)\+#\k\+$'
     echomsg "Description doesn't look like namespace/controller#action: ".description
     return ''
   endif
@@ -193,7 +193,7 @@ function! s:FindRouteDescription()
     let controller = rails#pluralize(expand('<cword>'))
     let action = 'show'
   elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+:\zs\k\+') > 0 ||
-        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs[[:keyword:]/#]\+\ze[''"]') > 0
+        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs\%(\k\|\/\|#\)\+\ze[''"]') > 0
     " Examples:
     " - get '<something>', **options
     "
@@ -232,7 +232,7 @@ function! s:FindRouteDescription()
     end
   endif
 
-  let explicit_controller_pattern = 'controller\(:\| =>\)\s*[''"]\zs[[:keyword:]/]\+\ze[''"]'
+  let explicit_controller_pattern = 'controller\(:\| =>\)\s*[''"]\zs\%(\k\|\/\)\+\ze[''"]'
   if getline('.') =~ explicit_controller_pattern
     " explicit controller specified, just use that
     let controller = matchstr(getline('.'), explicit_controller_pattern)
@@ -261,7 +261,7 @@ function! s:FindRouteControllerBlock()
     let route_path = []
     let controller_pattern = 'controller [''":]\zs\k\+'
 
-    if search('^ \{,'.(indent - &sw).'}'.controller_pattern, 'bW')
+    if indent > 0 && search('^ \{,'.(indent - 1).'}'.controller_pattern, 'bW')
       return expand('<cword>')
     else
       return ''
@@ -280,7 +280,11 @@ function! s:FindRouteNamespace()
     let indent = indent('.')
     let namespace_path = []
     let namespace_pattern = '\%(namespace\|\S.\{-}module\s*\%(:\|\s*=>\)\)\s*[''":]\zs\k\+'
-    let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
+    if indent == 0
+      let indented_namespace_pattern = '^'.namespace_pattern
+    else
+      let indented_namespace_pattern = '^ \{,'.(indent - 1).'}'.namespace_pattern
+    endif
     let skip = rails_extra#search#SkipSyntax(['Comment'])
 
     while rails_extra#search#SearchSkip(indented_namespace_pattern, skip, 'bW')
@@ -307,7 +311,7 @@ function! s:FindRouteNamespace()
       if indent == 0
         let indented_namespace_pattern = '^'.namespace_pattern
       else
-        let indented_namespace_pattern = '^ \{,'.(indent - &sw).'}'.namespace_pattern
+        let indented_namespace_pattern = '^ \{,'.(indent - 1).'}'.namespace_pattern
       endif
     endwhile
 
