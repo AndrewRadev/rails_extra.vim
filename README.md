@@ -1,9 +1,15 @@
 [![GitHub version](https://badge.fury.io/gh/andrewradev%2Frails_extra.vim.svg)](https://badge.fury.io/gh/andrewradev%2Frails_extra.vim)
 [![Build Status](https://secure.travis-ci.org/AndrewRadev/rails_extra.vim.svg?branch=master)](http://travis-ci.org/AndrewRadev/rails_extra.vim)
 
-## Usage
+## Dependencies
 
 Depends on [vim-rails](https://github.com/tpope/vim-rails) -- please make sure that's installed first.
+
+If **anything** in this plugin blocks a vim-rails feature or accidentally duplicates it (vim-rails is a large plugin), please let me know. See below on how you can selectively disable features if and when you need to.
+
+Also consider taking a look at the "[Reliability](#reliability)" section for an idea on how well you can expect the plugin to work.
+
+## Usage
 
 The plugin defines some extra tools to work with Rails projects. Some of them might be a bit hacky, use heuristics, or support non-standard Rails tools, which might mean they don't necessarily make sense for vim-rails PRs.
 
@@ -106,6 +112,18 @@ command! -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
 ```
 
 These should work just as well as the buffer-local ones, with completion and everything.
+
+## Reliability
+
+Part of the reason this plugin exists is simple [NIH](https://en.wikipedia.org/wiki/Not_invented_here) -- it's easier for me to work with my own code than to adjust to somebody else's style, especially when it comes to lots of small ad-hoc changes.
+
+However, it's also possibly not "worth" including in vim-rails -- some features are hacky and/or potentially slow.
+
+For example, `gf` on a route uses regexes to figure out the controller/action pair to jump to. This can never be 100% precise, since you can do stuff like `resource "#{variable}_foo"`, for example. But there's probably even static patterns that the plugin doesn't get. It *could* maybe run `rake routes` or evaluate the routes file. Vim-rails evaluates ruby code to access routes, according to the docs. But this seems way too complicated to me, and regexes seem to work often enough for my own purposes.
+
+Factory completion can also be potentially slow -- the plugin tries to read *all* the factory files, line by line, and collect factories by regex. It's never been slow for me, but it totally could be. If you use vim-projectionst with one file per factory, it would do the same job in a much more efficient way. But I often work with projects with multiple factories per file, and that's why this tool exists.
+
+In the end, it's worked well enough for me in practice, with no catastrophic failures so far. The worst that has happened is that some `gf` on a route hasn't worked and I'd written it down to implement later and navigated to the right place manually, which is fine by me. Your mileage may vary -- please open a github issue if you hit a problem.
 
 ## Contributing
 
