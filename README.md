@@ -7,6 +7,10 @@ Depends on [vim-rails](https://github.com/tpope/vim-rails) -- please make sure t
 
 The plugin defines some extra tools to work with Rails projects. Some of them might be a bit hacky, use heuristics, or support non-standard Rails tools, which might mean they don't necessarily make sense for vim-rails PRs.
 
+Here's a demo of its upgrades to the `gf` family of mappings:
+
+![Demo](http://i.andrewradev.com/75ff2a84fcdc79a487c725d42d571fbe.gif)
+
 ### Edit commands
 
 There are several extra editing commands you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
