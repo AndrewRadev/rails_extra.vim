@@ -217,14 +217,6 @@ function! s:FindRouteDescription()
     endif
   endif
 
-  " elseif rails_extra#search#UnderCursor('''[^'']\+''') > 0
-  "   let controller = expand('<cfile>')
-  " elseif rails_extra#search#UnderCursor('"[^"]\+"') > 0
-  "   let controller = expand('<cfile>')
-  " else
-  "   let controller = ''
-  " endif
-
   if controller == ''
     let wrapping_controller_block = s:FindRouteControllerBlock()
     if wrapping_controller_block != ''
@@ -259,10 +251,14 @@ function! s:FindRouteControllerBlock()
     " Find any parent routes
     let indent = indent('.')
     let route_path = []
-    let controller_pattern = 'controller [''":]\zs\k\+'
+    let controller_pattern = '\%(controller\|resources\|resource\) [''":]\zs\k\+'
 
     if indent > 0 && search('^ \{,'.(indent - 1).'}'.controller_pattern, 'bW')
-      return expand('<cword>')
+      if getline('.') =~ '^\s*resource\>'
+        return rails#pluralize(expand('<cword>'))
+      else
+        return expand('<cword>')
+      endif
     else
       return ''
     endif

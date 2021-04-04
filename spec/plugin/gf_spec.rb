@@ -315,6 +315,62 @@ describe "gf mapping" do
       expect(current_line.strip).to eq 'def show'
     end
 
+    specify "resources: member action" do
+      write_file 'app/controllers/users_controller.rb', <<~EOF
+        class UsersController < ApplicationController
+          def index
+          end
+
+          def profile
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          resources :users do
+            member do
+              get :profile
+            end
+          end
+        end
+      EOF
+
+      vim.search 'profile'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'app/controllers/users_controller.rb'
+      expect(current_line.strip).to eq 'def profile'
+    end
+
+    specify "resource: member action" do
+      write_file 'app/controllers/users_controller.rb', <<~EOF
+        class UsersController < ApplicationController
+          def index
+          end
+
+          def profile
+          end
+        end
+      EOF
+
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          resource :user do
+            member do
+              get :profile
+            end
+          end
+        end
+      EOF
+
+      vim.search 'profile'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'app/controllers/users_controller.rb'
+      expect(current_line.strip).to eq 'def profile'
+    end
+
     describe "namespaces" do
       specify "using `namespace`" do
         write_file 'app/controllers/app/right/users_controller.rb', <<~EOF
