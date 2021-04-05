@@ -3,7 +3,6 @@
 function! rails_extra#Includeexpr()
   let callbacks = [
         \ 'rails_extra#gf#Translation',
-        \ 'rails_extra#gf#Asset',
         \ 'rails_extra#gf#Route',
         \ 'rails_extra#gf#Factory',
         \ 'rails_extra#gf#RspecMatcher',

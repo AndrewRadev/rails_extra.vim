@@ -1,29 +1,3 @@
-function! rails_extra#edit#Schema(model_name)
-  let model_name = rails#singularize(rails#underscore(a:model_name))
-
-  if model_name == ''
-    let model_name = s:CurrentModelName()
-  endif
-
-  if filereadable('db/schema.rb')
-    edit db/schema.rb
-
-    if model_name != ''
-      let table_name = rails#pluralize(rails#underscore(model_name))
-      call search('create_table "'.table_name.'"')
-    endif
-  elseif filereadable('db/structure.sql')
-    edit db/structure.sql
-
-    if model_name != ''
-      let table_name = rails#pluralize(rails#underscore(model_name))
-      call search('CREATE TABLE .*'.table_name.' (')
-    endif
-  else
-    echoerr "No schema.rb/structure.sql found in project"
-  endif
-endfunction
-
 function! rails_extra#edit#Factory(factory_name)
   let factory_name = a:factory_name
   if factory_name == ''

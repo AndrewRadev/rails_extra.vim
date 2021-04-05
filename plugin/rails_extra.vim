@@ -29,9 +29,6 @@ augroup RailsExtra
     " autocmd User Rails command! -buffer
     "       \ Eroutes edit config/routes.rb
 
-    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteSchema
-          \ Eschema call rails_extra#edit#Schema(<q-args>)
-
     autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
           \ Efactory call rails_extra#edit#Factory(<q-args>)
   endif

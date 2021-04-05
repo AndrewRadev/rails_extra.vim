@@ -81,37 +81,8 @@ function! rails_extra#gf#Translation()
   endtry
 endfunction
 
-function! rails_extra#gf#Asset()
-  let line = getline('.')
-
-  let js_require_pattern     = '//\s*=\s*require \(\f\+\)\s*$'
-  let coffee_require_pattern = '#\s*=\s*require \(\f\+\)\s*$'
-  let css_require_pattern    = '\*\s*=\s*require \(\f\+\)\s*$'
-  let scss_import_pattern    = '@import ["'']\(.\{-}\)["''];'
-
-  if expand('%:e') =~ 'coffee' && line =~ coffee_require_pattern
-    let path = rails_extra#util#ExtractRx(line, coffee_require_pattern, '\1')
-    return s:FindRailsFile('app/assets/javascripts/'.path.'.{js,coffee}')
-  elseif expand('%:e') =~ 'scss\|less' && line =~ scss_import_pattern
-    let path = rails_extra#util#ExtractRx(line, scss_import_pattern, '\1')
-    let file = s:FindRailsFile('app/assets/stylesheets/'.path.'.{css,scss,less}')
-    if file == ''
-      let path = substitute(path, '.*/\zs\([^/]\{-}\)$', '_\1', '')
-      let file = s:FindRailsFile('app/assets/stylesheets/'.path.'.{css,scss,less}')
-    endif
-    return file
-  elseif &ft == 'javascript' && line =~ js_require_pattern
-    let path = rails_extra#util#ExtractRx(line, js_require_pattern, '\1')
-    return s:FindRailsFile('app/assets/javascripts/'.path.'.{js,coffee}')
-  elseif (&ft == 'css' || &ft == 'scss') && line =~ css_require_pattern
-    let path = rails_extra#util#ExtractRx(line, css_require_pattern, '\1')
-    return s:FindRailsFile('app/assets/stylesheets/'.path.'.{css,scss,less}')
-  endif
-
-  return ''
-endfunction
-
 function! rails_extra#gf#Route()
+  " TODO (2021-04-05) Could be `config/routes/*.rb`, test
   if expand('%:p') !~ 'config/routes\.rb$'
     return ''
   endif
@@ -169,17 +140,6 @@ function! rails_extra#gf#RspecMatcher()
   endif
 
   return matcher_filename
-endfunction
-
-function! s:FindRailsFile(pattern)
-  let root = s:GetRoot()
-
-  let matches = glob(root . a:pattern, 0, 1)
-  if !empty(matches)
-    return matches[0]
-  else
-    return ''
-  endif
 endfunction
 
 function! s:FindRouteDescription()

@@ -82,58 +82,6 @@ describe "gf mapping" do
     end
   end
 
-  describe "Asset imports" do
-    specify "following SCSS imports" do
-      touch_file 'app/assets/stylesheets/other.scss'
-      edit_file 'app/assets/stylesheets/application.scss', <<~EOF
-        @import 'other';
-      EOF
-
-      vim.search 'other'
-      vim.feedkeys('gf')
-
-      expect(current_file).to eq 'app/assets/stylesheets/other.scss'
-    end
-
-    specify "following javascript requires" do
-      touch_file 'app/assets/javascripts/other.js'
-      edit_file 'app/assets/javascripts/application.js', <<~EOF
-        //= require other
-      EOF
-
-      vim.search 'other'
-      vim.feedkeys('gf')
-
-      expect(current_file).to eq 'app/assets/javascripts/other.js'
-    end
-
-    specify "following coffeescript imports" do
-      touch_file 'app/assets/javascripts/other.js'
-      edit_file 'app/assets/javascripts/application.coffee', <<~EOF
-        #= require other
-      EOF
-
-      vim.search 'other'
-      vim.feedkeys('gf')
-
-      expect(current_file).to eq 'app/assets/javascripts/other.js'
-    end
-
-    specify "following CSS requires" do
-      touch_file 'app/assets/stylesheets/other.css'
-      edit_file 'app/assets/stylesheets/application.css', <<~EOF
-        /*
-         * = require other
-         */
-      EOF
-
-      vim.search 'other'
-      vim.feedkeys('gf')
-
-      expect(current_file).to eq 'app/assets/stylesheets/other.css'
-    end
-  end
-
   describe "Routes" do
     describe "controller#action" do
       before :each do

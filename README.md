@@ -19,13 +19,7 @@ Here's a demo of its upgrades to the `gf` family of mappings:
 
 ### Edit commands
 
-There are several extra editing commands you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
-
-``` vim
-:Eschema <table-name>
-```
-
-This will open the `schema.rb` file or the `structure.sql` file and attempt to jump to the given table name. It'll tab-complete said table names (for `structure.sql` in particular, this might not work well, because it depends on the specific database dump format -- PRs welcome for wider support).
+There's extra editing commands (so far just one, `:Efactory`) you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
 
 ``` vim
 :Efactory <factory-name>
@@ -42,18 +36,6 @@ Translations:
 ``` ruby
 # gf will try to jump to that key in `config/locale/en.yml`:
 t("foo.bar.baz")
-```
-
-Assets:
-
-``` javascript
-// jump to the file in the asset pipeline
-//= require 'some_file'
-```
-
-``` scss
-// jump to the SCSS import
-@import "some_file"
 ```
 
 Routes in `config/routes.rb` (doesn't work for everything, but a few examples):
@@ -101,19 +83,16 @@ rails_extra#edit#<Target>
 rails_extra#edit#Complete<Target>
 ```
 
-Where "Target" is one of the supported commands, "Schema" or "Factory" for the moment.
+Where "Target" is one of the supported commands, currently only "Factory"
 
 So, if you wanted to define global commands called `RailsEdit<Target>`, you could put this in your .vimrc:
 
 ``` vim
-command! -nargs=* -complete=custom,rails_extra#edit#CompleteSchema
-    \ RailsEditSchema call rails_extra#edit#Schema(<q-args>)
-
 command! -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
     \ RailsEditFactory call rails_extra#edit#Factory(<q-args>)
 ```
 
-These should work just as well as the buffer-local ones, with completion and everything.
+Defined like this, these kinds of commands should work just as well as the buffer-local ones, with completion and everything.
 
 ## Reliability
 
@@ -121,7 +100,7 @@ Part of the reason this plugin exists is simple [NIH](https://en.wikipedia.org/w
 
 However, it's also possibly not "worth" including in vim-rails -- some features are hacky and/or potentially slow.
 
-For example, `gf` on a route uses regexes to figure out the controller/action pair to jump to. This can never be 100% precise, since you can do stuff like `resource "#{variable}_foo"`, for example. But there's probably even static patterns that the plugin doesn't get. It *could* maybe run `rake routes` or evaluate the routes file. Vim-rails evaluates ruby code to access routes, according to the docs. But this seems way too complicated to me, and regexes seem to work often enough for my own purposes.
+For example, `gf` on a route uses regexes to figure out the controller/action pair to jump to. This can never be 100% precise, since you can do stuff like `resource "#{variable}_foo"`, for example. But there's probably even static patterns that the plugin doesn't get. It *could* maybe run `rake routes` (fun fact: [vim-rails does that](https://twitter.com/tpope/status/1379167639914876929)). But figuring out what is under the cursor is a separate problem from getting the full route list.
 
 Factory completion can also be potentially slow -- the plugin tries to read *all* the factory files, line by line, and collect factories by regex. It's never been slow for me, but it totally could be. If you use [vim-projectionist](https://github.com/tpope/vim-projectionist) with one file per factory, it would do the same job in a much more efficient way. But I often work with projects with multiple factories per file, and that's why this tool exists.
 
