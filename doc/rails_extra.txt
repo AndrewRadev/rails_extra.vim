@@ -200,7 +200,7 @@ seem to work often enough for my own purposes.
 
 Factory completion can also be potentially slow -- the plugin tries to read
 all the factory files, line by line, and collect factories by regex. It's
-never been slow for me, but it totally could be. If you use vim-projectionst
+never been slow for me, but it totally could be. If you use vim-projectionist
 with one file per factory, it would do the same job in a much more efficient
 way. But I often work with projects with multiple factories per file, and
 that's why this tool exists.
