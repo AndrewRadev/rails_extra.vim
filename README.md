@@ -46,11 +46,13 @@ t("foo.bar.baz")
 
 Assets:
 
-``` scss
-# jump to the file in the asset pipeline
+``` javascript
+// jump to the file in the asset pipeline
 //= require 'some_file'
+```
 
-# jump to the SCSS import
+``` scss
+// jump to the SCSS import
 @import "some_file"
 ```
 
