@@ -19,7 +19,16 @@ To run the test suite, provided you have ruby installed, first you need bundler:
 $ gem install bundler
 ```
 
-If you already have the `bundle` command (check it out with `which bundle`), you don't need this step. Afterwards, it should be as simple as:
+If you already have the `bundle` command (check it out with `which bundle`), you don't need this step.
+
+You also need to check out submodules:
+
+```
+git submodule init
+git submodule update
+```
+
+Afterwards, it should be as simple as:
 
 ```
 $ bundle install
