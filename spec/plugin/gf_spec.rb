@@ -383,6 +383,69 @@ describe "gf mapping" do
       end
     end
 
+    describe "get path => controller#action" do
+      before :each do
+        # Note: without a namespace, vim-rails can more or less handle this itself
+        write_file 'app/controllers/foo/users_controller.rb', <<~EOF
+          class Foo::UsersController < ApplicationController
+            def index
+            end
+
+            def profile
+            end
+          end
+        EOF
+      end
+
+      specify "with a `/path`" do
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            namespace :foo do
+              get '/user_profile' => 'users#profile'
+            end
+          end
+        EOF
+
+        vim.search 'user_profile'
+        vim.feedkeys('gf')
+
+        expect(current_file).to eq 'app/controllers/foo/users_controller.rb'
+        expect(current_line.strip).to eq 'def profile'
+      end
+
+      specify "with a `path`" do
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            namespace :foo do
+              get 'user_profile' => 'users#profile'
+            end
+          end
+        EOF
+
+        vim.search 'user_profile'
+        vim.feedkeys('gf')
+
+        expect(current_file).to eq 'app/controllers/foo/users_controller.rb'
+        expect(current_line.strip).to eq 'def profile'
+      end
+
+      specify "with a `path/:param`" do
+        edit_file 'config/routes.rb', <<~EOF
+          Rails.application.routes.draw do
+            namespace :foo do
+              get '/user_profile/:id' => 'users#profile'
+            end
+          end
+        EOF
+
+        vim.search 'user_profile'
+        vim.feedkeys('gf')
+
+        expect(current_file).to eq 'app/controllers/foo/users_controller.rb'
+        expect(current_line.strip).to eq 'def profile'
+      end
+    end
+
     specify "messy cases" do
       write_file 'app/controllers/site/home_controller.rb', <<~EOF
         class App::Bar::UsersController < ApplicationController

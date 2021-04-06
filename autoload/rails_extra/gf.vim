@@ -152,7 +152,7 @@ function! s:FindRouteDescription()
     let controller = rails#pluralize(expand('<cword>'))
     let action = 'show'
   elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+:\zs\k\+') > 0 ||
-        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs\%(\k\|\/\|#\)\+\ze[''"]') > 0
+        \ rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\/\=\zs\%(\k\|\/\|#\|:\|\*\)\+\ze[''"]') > 0
     " Examples:
     " - get '<something>', **options
     "
@@ -171,6 +171,11 @@ function! s:FindRouteDescription()
       " - get 'controller/action'
       "
       let [controller, action] = split(expand('<cfile>'), '/')
+    elseif rails_extra#search#UnderCursor(s:http_method_pattern.'\s\+[''"]\%(\k\|/\|:\|\*\)\+[''"]\s*=>\s*[''"]\zs\k\+#\k\+\ze[''"]') > 0
+      " Examples:
+      " - get '/path' => 'controller#action'
+      "
+      let [controller, action] = split(expand('<cfile>'), '#')
     else
       let action = expand('<cword>')
     endif
