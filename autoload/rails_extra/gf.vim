@@ -82,8 +82,7 @@ function! rails_extra#gf#Translation()
 endfunction
 
 function! rails_extra#gf#Route()
-  " TODO (2021-04-05) Could be `config/routes/*.rb`, test
-  if expand('%:p') !~ 'config/routes\.rb$'
+  if expand('%:p') !~ 'config/\%(routes\.rb\|routes/.*\.rb\)$'
     return ''
   endif
   let root = s:GetRoot()
