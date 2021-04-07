@@ -14,43 +14,6 @@ function! rails_extra#edit#Factory(factory_name)
   endif
 endfunction
 
-function! s:CurrentModelName()
-  let current_file = expand('%:p')
-
-  if current_file =~ 'app/models/.*\.rb$'
-    let filename = expand('%:t:r')
-    return rails_extra#util#CapitalCamelCase(filename)
-  else
-    return ''
-  endif
-endfunction
-
-function! rails_extra#edit#CompleteSchema(A, L, P)
-  let names = {}
-  let schema_file    = get(b:, 'rails_root', '.') . '/db/schema.rb'
-  let structure_file = get(b:, 'rails_root', '.') . '/db/structure.sql'
-
-  if filereadable(schema_file)
-    for line in readfile(schema_file)
-      let pattern = 'create_table "\zs\k\+\ze"'
-      if line =~ pattern
-        let names[matchstr(line, pattern)] = 1
-      endif
-    endfor
-  endif
-
-  if filereadable(structure_file)
-    for line in readfile(structure_file)
-      let pattern = 'CREATE TABLE \(.*\.\)\=\zs\k\+\ze\s*($'
-      if line =~ pattern
-        let names[matchstr(line, pattern)] = 1
-      endif
-    endfor
-  endif
-
-  return join(keys(names), "\n")
-endfunction
-
 function! rails_extra#edit#CompleteFactories(A, L, P)
   let factory_names = []
 
@@ -104,4 +67,15 @@ function! rails_extra#edit#FindFactoryFiles()
   endfor
 
   return factory_files
+endfunction
+
+function! s:CurrentModelName()
+  let current_file = expand('%:p')
+
+  if current_file =~ 'app/models/.*\.rb$'
+    let filename = expand('%:t:r')
+    return rails_extra#util#CapitalCamelCase(filename)
+  else
+    return ''
+  endif
 endfunction
