@@ -33,6 +33,41 @@ function! rails_extra#edit#CompleteFactories(A, L, P)
   return join(factory_names, "\n")
 endfunction
 
+" TODO (2021-04-07) Experiment, test
+function! rails_extra#edit#Path(url)
+  let path = substitute(a:url, '^http://[^/]\+\(/.*\)\=$', '\1', '')
+  if path == ''
+    let path = '/'
+  endif
+
+  for route in rails#app().routes()
+    let path_regex = route.path
+    let [controller, action] = split(route.handler, '#')
+
+    " handle /:param/ segments
+    let path_regex = substitute(path_regex, ':\k\+', '[^/]\\+', 'g')
+    " handle optional (.:format) segments
+    let path_regex = substitute(path_regex, '(\(.\{-}\))', '\\(\1\\)\\=', 'g')
+    " match entire path
+    let path_regex = '^'.path_regex.'$'
+
+    if path =~ path_regex
+      let [controller, action] = split(route.handler, '#')
+      let root = get(b:, 'rails_root', getcwd()).'/'
+      let filename = root.'app/controllers/'.controller.'_controller.rb'
+
+      if filereadable(filename)
+        call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action.'\>')
+      endif
+
+      exe 'edit '.filename
+      return
+    endif
+  endfor
+
+  echoerr "Couldn't find the route for: ".path
+endfunction
+
 function! rails_extra#edit#FindFactory(name)
   let pattern = '^\s*factory :'.a:name.'\>'
 

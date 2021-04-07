@@ -17,6 +17,9 @@ endif
 augroup RailsExtra
   autocmd!
 
+  autocmd User Rails command! -buffer -nargs=1
+        \ Epath call rails_extra#edit#Path(<q-args>)
+
   if g:rails_extra_gf
     autocmd User Rails
           \ if !exists('b:ember_root') |
