@@ -33,9 +33,10 @@ function! rails_extra#edit#CompleteFactories(A, L, P)
   return join(factory_names, "\n")
 endfunction
 
-" TODO (2021-04-07) Experiment, test
 function! rails_extra#edit#Path(url)
   let path = substitute(a:url, '^https\=://[^/]\+\(/.*\)\=$', '\1', '')
+  let path = substitute(path, '^\(.*\)?.*$', '\1', '')
+
   if path == ''
     let path = '/'
   endif
@@ -47,6 +48,8 @@ function! rails_extra#edit#Path(url)
     let path_regex = substitute(path_regex, ':\k\+', '[^/]\\+', 'g')
     " handle optional (.:format) segments
     let path_regex = substitute(path_regex, '(\(.\{-}\))', '\\(\1\\)\\=', 'g')
+    " handle catchall * pattern at end
+    let path_regex = substitute(path_regex, '\*$', '.*', '')
     " match entire path
     let path_regex = '^'.path_regex.'$'
 
