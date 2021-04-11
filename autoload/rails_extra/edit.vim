@@ -42,8 +42,14 @@ function! rails_extra#edit#Path(url)
   endif
 
   for route in rails#app().routes()
+    if route.method != 'GET' && route.method != 'HEAD'
+      continue
+    endif
+
     let path_regex = route.path
 
+    " all `.` characters should be literal:
+    let path_regex = substitute(path_regex, '\.', '\\.', 'g')
     " handle /:param/ segments
     let path_regex = substitute(path_regex, ':\k\+', '[^/]\\+', 'g')
     " handle optional (.:format) segments
