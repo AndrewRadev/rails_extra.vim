@@ -1,13 +1,14 @@
-function! rails_extra#edit#Factory(factory_name)
+function! rails_extra#edit#Factory(factory_name, command)
   let factory_name = a:factory_name
   if factory_name == ''
     let factory_name = rails_extra#util#Underscore(s:CurrentModelName())
   endif
+  let command = a:command
 
   let [filename, lineno] = rails_extra#edit#FindFactory(factory_name)
 
   if filename != ''
-    exe 'edit '.filename
+    exe command filename
     exe lineno
   else
     echohl WarningMsg | echomsg "Factory not found: ".factory_name | echohl NONE
@@ -33,7 +34,8 @@ function! rails_extra#edit#CompleteFactories(A, L, P)
   return join(factory_names, "\n")
 endfunction
 
-function! rails_extra#edit#Path(url)
+function! rails_extra#edit#Path(url, command)
+  let command = a:command
   let path = substitute(a:url, '^https\=://[^/]\+\(/.*\)\=$', '\1', '')
   let path = substitute(path, '^\(.*\)?.*$', '\1', '')
 
@@ -68,7 +70,7 @@ function! rails_extra#edit#Path(url)
         call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action.'\>')
       endif
 
-      exe 'edit '.filename
+      exe command filename
       return
     endif
   endfor

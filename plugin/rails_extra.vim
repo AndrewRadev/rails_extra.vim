@@ -30,10 +30,10 @@ augroup RailsExtra
     "       \ Eroutes edit config/routes.rb
 
     autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
-          \ Efactory call rails_extra#edit#Factory(<q-args>)
+          \ Efactory call rails_extra#edit#Factory(<q-args>, 'edit')
 
     autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompletePaths
-          \ Epath call rails_extra#edit#Path(<q-args>)
+          \ Epath call rails_extra#edit#Path(<q-args>, 'edit')
   endif
 augroup END
 
