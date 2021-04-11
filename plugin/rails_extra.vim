@@ -17,9 +17,6 @@ endif
 augroup RailsExtra
   autocmd!
 
-  autocmd User Rails command! -buffer -nargs=1
-        \ Epath call rails_extra#edit#Path(<q-args>)
-
   if g:rails_extra_gf
     autocmd User Rails
           \ if !exists('b:ember_root') |
@@ -34,6 +31,9 @@ augroup RailsExtra
 
     autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
           \ Efactory call rails_extra#edit#Factory(<q-args>)
+
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompletePaths
+          \ Epath call rails_extra#edit#Path(<q-args>)
   endif
 augroup END
 

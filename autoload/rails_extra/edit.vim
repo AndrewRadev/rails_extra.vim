@@ -70,6 +70,44 @@ function! rails_extra#edit#Path(url)
   echoerr "Couldn't find the route for: ".path
 endfunction
 
+function! rails_extra#edit#CompletePaths(A, L, P)
+  let paths = []
+
+  for route in rails#app().routes()
+    let path_variants = [route.path]
+
+    " If there are optional groups, like /path(:/id)(.:format), create one
+    " copy for each variant:
+    let optional_group_match = match(path_variants[0], '(.\{-})')
+    while optional_group_match >= 0
+      let current_variants = copy(path_variants)
+      let path_variants = []
+
+      for variant in current_variants
+        let variant_match = match(variant, '(.\{-})')
+        if variant_match <= 0
+          continue
+        endif
+
+        let prefix = strpart(variant, 0, variant_match)
+        let suffix = strpart(variant, variant_match)
+
+        call add(path_variants, prefix . substitute(suffix, '(.\{-})', '', ''))
+        call add(path_variants, prefix . substitute(suffix, '(\(.\{-}\))', '\1', ''))
+      endfor
+
+      let optional_group_match = match(path_variants[0], '(.\{-})')
+    endwhile
+
+    call extend(paths, path_variants)
+  endfor
+
+  call sort(paths)
+  call uniq(paths)
+
+  return join(paths, "\n")
+endfunction
+
 function! rails_extra#edit#FindFactory(name)
   let pattern = '^\s*factory :'.a:name.'\>'
 
