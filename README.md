@@ -19,13 +19,21 @@ Here's a demo of its upgrades to the `gf` family of mappings:
 
 ### Edit commands
 
-There's extra editing commands (so far just one, `:Efactory`) you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
+There's extra editing commands you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
 
 ``` vim
 :Efactory <factory-name>
 ```
 
 This will attempt to jump to a [`factory_bot`](https://github.com/thoughtbot/factory_bot) factory definition. You can use vim-projectionist for factories, but that approach will only pick out factories in separate files. This `:Efactory` command does some extra work to parse all the factory bot files for definitions -- this will mean it's slower, so your mileage might vary.
+
+``` vim
+:Epath /path/to/route
+:Epath http://localhost:3000/path/to/route
+:Epath https://production-url.com/path/to/route
+```
+
+This will use the `rails#app().routes()` function from vim-rails to get all the routes of the application and pattern-match the URL to one of them, jumping to the relevant controller/action. It tab-completes with all the paths, so you could navigate manually, or you could copy-paste the browser URL into your Vim.
 
 ### Go to file
 
@@ -80,16 +88,19 @@ For each editing command defined by this plugin, there's going to be two functio
 
 ``` vim
 rails_extra#edit#<Target>
-rails_extra#edit#Complete<Target>
+rails_extra#edit#Complete<Targets>
 ```
 
-Where "Target" is one of the supported commands, currently only "Factory"
+Where "Target" is one of the supported commands, currently "Factory" and "Path", and "Targets" is the pluralized version of that word.
 
 So, if you wanted to define global commands called `RailsEdit<Target>`, you could put this in your .vimrc:
 
 ``` vim
 command! -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
     \ RailsEditFactory call rails_extra#edit#Factory(<q-args>)
+
+command! -nargs=* -complete=custom,rails_extra#edit#CompletePaths
+    \ RailsEditPath call rails_extra#edit#Path(<q-args>)
 ```
 
 Defined like this, these kinds of commands should work just as well as the buffer-local ones, with completion and everything.
