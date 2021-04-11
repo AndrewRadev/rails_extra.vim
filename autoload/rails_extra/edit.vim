@@ -82,6 +82,10 @@ function! rails_extra#edit#CompletePaths(A, L, P)
   let paths = []
 
   for route in rails#app().routes()
+    if route.method != 'GET' && route.method != 'HEAD'
+      continue
+    endif
+
     let path_variants = [route.path]
 
     " If there are optional groups, like /path(:/id)(.:format), create one
