@@ -44,7 +44,7 @@ function! rails_extra#edit#Path(url, command)
   endif
 
   for route in rails#app().routes()
-    if route.method != 'GET' && route.method != 'HEAD'
+    if route.method != 'GET'
       continue
     endif
 
@@ -82,7 +82,7 @@ function! rails_extra#edit#CompletePaths(A, L, P)
   let paths = []
 
   for route in rails#app().routes()
-    if route.method != 'GET' && route.method != 'HEAD'
+    if route.method != 'GET'
       continue
     endif
 

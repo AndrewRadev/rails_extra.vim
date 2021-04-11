@@ -19,7 +19,9 @@ Here's a demo of its upgrades to the `gf` family of mappings:
 
 ### Edit commands
 
-There's extra editing commands you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
+There's extra editing commands you can use that are similar to what vim-rails provides. These are defined as buffer-local commands in rails project files, just like vim-rails does it. There are also S, V, and T versions.
+
+If you'd like to define them globally, see the "[Advanced Usage](#advanced-usage)" section below.
 
 ``` vim
 :Efactory <factory-name>
@@ -34,6 +36,8 @@ This will attempt to jump to a [`factory_bot`](https://github.com/thoughtbot/fac
 ```
 
 This will use the `rails#app().routes()` function from vim-rails to get all the routes of the application and pattern-match the URL to one of them, jumping to the relevant controller/action. It tab-completes with all the paths, so you could navigate manually, or you could copy-paste the browser URL into your Vim.
+
+Note that this will only complete GET routes, since otherwise multiple URLs could point to the same action. And since I'd use it for browser-copied URLs, I'm fine with limiting it like that. I might tweak this in the future (what about results of a form POST?), but it feels good enough like this for now.
 
 ### Go to file
 

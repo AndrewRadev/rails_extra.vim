@@ -25,15 +25,23 @@ augroup RailsExtra
   endif
 
   if g:rails_extra_edit_commands
-    " TODO (2020-04-26) Grep through routes, provide completion
-    " autocmd User Rails command! -buffer
-    "       \ Eroutes edit config/routes.rb
-
     autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
           \ Efactory call rails_extra#edit#Factory(<q-args>, 'edit')
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
+          \ Sfactory call rails_extra#edit#Factory(<q-args>, 'split')
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
+          \ Vfactory call rails_extra#edit#Factory(<q-args>, 'vertical split')
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompleteFactories
+          \ Tfactory call rails_extra#edit#Factory(<q-args>, 'tabedit')
 
     autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompletePaths
           \ Epath call rails_extra#edit#Path(<q-args>, 'edit')
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompletePaths
+          \ Spath call rails_extra#edit#Path(<q-args>, 'split')
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompletePaths
+          \ Vpath call rails_extra#edit#Path(<q-args>, 'vertical split')
+    autocmd User Rails command! -buffer -nargs=* -complete=custom,rails_extra#edit#CompletePaths
+          \ Tpath call rails_extra#edit#Path(<q-args>, 'tabedit')
   endif
 augroup END
 
