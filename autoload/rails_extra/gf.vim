@@ -87,6 +87,10 @@ function! rails_extra#gf#Route()
   endif
   let root = s:GetRoot()
 
+  if rails_extra#search#UnderCursor('\<draw :\zs\k\+')
+    return root.'config/routes/'.expand('<cword>').'.rb'
+  endif
+
   let description = s:FindRouteDescription()
   if description == ''
     return ''

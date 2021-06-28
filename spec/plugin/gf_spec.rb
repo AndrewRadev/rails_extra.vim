@@ -83,6 +83,20 @@ describe "gf mapping" do
   end
 
   describe "Routes" do
+    specify "draw :file" do
+      touch_file 'config/routes/extra.rb'
+      edit_file 'config/routes.rb', <<~EOF
+        Rails.application.routes.draw do
+          draw :extra
+        end
+      EOF
+
+      vim.search 'extra'
+      vim.feedkeys('gf')
+
+      expect(current_file).to eq 'config/routes/extra.rb'
+    end
+
     describe "controller#action" do
       before :each do
         write_file 'app/controllers/users_controller.rb', <<~EOF
