@@ -109,4 +109,69 @@ describe ":Epath" do
     expect(current_file).to eq 'app/controllers/pages_controller.rb'
     expect(current_line.strip).to eq 'def login'
   end
+
+  it "jumps to mailer previews under test/" do
+    write_file 'test/mailers/previews/user_mailer_preview.rb', <<~EOF
+      class UserMailerPreview < ActionMailer::Preview
+        def other
+        end
+
+        def welcome_email
+        end
+      end
+    EOF
+
+    edit_file 'test.rb'
+    expect(current_file).to eq 'test.rb'
+
+    vim.command 'Epath /rails/mailers/user_mailer'
+    expect(current_file).to eq 'test/mailers/previews/user_mailer_preview.rb'
+
+    edit_file 'test.rb'
+    expect(current_file).to eq 'test.rb'
+
+    vim.command 'Epath /rails/mailers/user_mailer/welcome_email'
+    expect(current_file).to eq 'test/mailers/previews/user_mailer_preview.rb'
+    expect(current_line.strip).to eq 'def welcome_email'
+  end
+
+  it "jumps to mailer previews under spec/" do
+    write_file 'spec/mailers/previews/user_mailer_preview.rb', <<~EOF
+      class UserMailerPreview < ActionMailer::Preview
+        def other
+        end
+
+        def welcome_email
+        end
+      end
+    EOF
+
+    edit_file 'test.rb'
+    expect(current_file).to eq 'test.rb'
+
+    vim.command 'Epath /rails/mailers/user_mailer/welcome_email'
+    expect(current_file).to eq 'spec/mailers/previews/user_mailer_preview.rb'
+    expect(current_line.strip).to eq 'def welcome_email'
+  end
+
+  it "jumps to mailer previews in namespaces" do
+    pending "TODO: Need to figure out how to implement -- check combinations for existence?"
+
+    write_file 'spec/mailers/previews/admin/user_mailer_preview.rb', <<~EOF
+      class Admin::UserMailerPreview < ActionMailer::Preview
+        def other
+        end
+
+        def welcome_email
+        end
+      end
+    EOF
+
+    edit_file 'test.rb'
+    expect(current_file).to eq 'test.rb'
+
+    vim.command 'Epath /rails/mailers/admin/user_mailer/welcome_email'
+    expect(current_file).to eq 'spec/mailers/previews/admin/user_mailer_preview.rb'
+    expect(current_line.strip).to eq 'def welcome_email'
+  end
 end

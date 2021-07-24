@@ -43,6 +43,34 @@ function! rails_extra#edit#Path(url, command)
     let path = '/'
   endif
 
+  let root = get(b:, 'rails_root', getcwd()).'/'
+
+  if path =~ '^/rails/mailers/\k\+'
+    " special case, we're looking for a mailer preview
+    let mailer_descriptor = matchstr(path,  '^/rails/mailers/\zs\k\+\%(/\k\+\)\=\ze')
+    let mailer_parts = split(mailer_descriptor, '/')
+
+    if len(mailer_parts) > 1
+      let mailer = join(mailer_parts[0:-2], '/')
+      let action = mailer_parts[-1]
+    else
+      let mailer = mailer_parts[0]
+      let action = ''
+    end
+
+    let filename = root.'test/mailers/previews/'.mailer.'_preview.rb'
+    if !filereadable(filename)
+      let filename = root.'spec/mailers/previews/'.mailer.'_preview.rb'
+    endif
+
+    if filereadable(filename) && action != ''
+      call rails_extra#SetFileOpenCallbackSearch(filename, 'def '.action.'\>')
+    endif
+
+    exe command filename
+    return
+  endif
+
   for route in rails#app().routes()
     if route.method != 'GET'
       continue
@@ -63,7 +91,6 @@ function! rails_extra#edit#Path(url, command)
 
     if path =~ path_regex
       let [controller, action] = split(route.handler, '#')
-      let root = get(b:, 'rails_root', getcwd()).'/'
       let filename = root.'app/controllers/'.controller.'_controller.rb'
 
       if filereadable(filename)
@@ -78,6 +105,10 @@ function! rails_extra#edit#Path(url, command)
   echoerr "Couldn't find the route for: ".path
 endfunction
 
+" Note: this doesn't complete /rails/mailers paths, because they don't seem to
+" be rendered by `rails routes` and such. Could add them manually, but feels
+" like too much of a bother for now.
+"
 function! rails_extra#edit#CompletePaths(A, L, P)
   let paths = []
 
