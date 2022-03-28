@@ -122,6 +122,10 @@ endfunction
 
 function! rails_extra#gf#Factory()
   if rails_extra#search#UnderCursor('\<\%(build\|build_stubbed\|create\|attributes_for\)\%(_list\)\=[ (]:\zs\k\+') > 0
+        \ || (
+        \   expand('%:p') =~ '\V'.s:GetRoot().'\m\%(spec\|test\)/factories'
+        \   && rails_extra#search#UnderCursor('\<\%(association\)[ (]:\zs\k\+') > 0
+        \ )
     let factory = expand('<cword>')
     let [filename, lineno] = rails_extra#edit#FindFactory(factory)
 
