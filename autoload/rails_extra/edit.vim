@@ -38,6 +38,7 @@ function! rails_extra#edit#Path(url, command)
   let command = a:command
   let path = substitute(a:url, '^https\=://[^/]\+\(/.*\)\=$', '\1', '')
   let path = substitute(path, '^\(.*\)?.*$', '\1', '')
+  let path = substitute(path, '^\(.*\)#.*$', '\1', '')
 
   if path == ''
     let path = '/'
